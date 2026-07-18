@@ -50,7 +50,7 @@
     <!-- لوحة الإدارة الشاملة (مخفية وتظهر فقط بعد الدخول الصحيح) -->
     <div id="admin-dashboard" style="display: none;">
         <div class="card" style="background: linear-gradient(135deg, #1f2937, #111827); color: white; border: none;">
-            <h2>مرحباً بك في لوحة المراقبة وإسناد المهام للفنيين والتحكم بالباقات 📊</h2>
+            <h2>مرحباً بك في لوحة المراقبة وإسناد المهام للفنيين والتحكم بالباقات والخدمات الفرعية 📊</h2>
         </div>
 
         <!-- قسم إضافة الفنيين -->
@@ -64,12 +64,19 @@
             <button class="btn btn-success" id="btn-add-tech" onclick="addTechnician()">إنشاء حساب الفني وتفعيله</button>
         </div>
 
-        <!-- قسم الخدمات والمنتجات -->
+        <!-- قسم الخدمات والمنتجات المحدث بالتصنيفات المنظمة -->
         <div class="card">
             <div class="card-header">إضافة وتحديث الخدمات والباقات في الرئيسية ➕</div>
             <div style="display: flex; gap: 15px; flex-wrap: wrap;">
                 <div class="form-group"><label>اسم الخدمة / الباقة</label><input type="text" id="a-prod-name" placeholder="مثال: صيانة التكييف"></div>
                 <div class="form-group"><label>السعر المعروض</label><input type="text" id="a-prod-price" placeholder="مثال: 500 ر.س / سنوياً"></div>
+                <div class="form-group">
+                    <label>تصنيف ومكان العرض (نوع الخدمة)</label>
+                    <select id="a-prod-type">
+                        <option value="package">باقة اشتراك رئيسية (تظهر بالصفحة الرئيسية للموقع الخارجي)</option>
+                        <option value="service">خدمة صيانة فرعية داخلية (تظهر للعميل بقائمة طلب صيانة جديد)</option>
+                    </select>
+                </div>
             </div>
             <button class="btn" id="btn-add-prod" onclick="addProduct()">نشر الخدمة على الموقع</button>
         </div>
@@ -170,7 +177,7 @@
                 const [reqs, usrs, feds, techs] = await Promise.all([
                     fetch(`${SUPABASE_URL}/rest/v1/requests?order=id.desc`, { headers }).then(r=>r.json()),
                     fetch(`${SUPABASE_URL}/rest/v1/users?order=id.desc`, { headers }).then(r=>r.json()),
-                    fetch(`${SUPABASE_URL}/rest/v1/feedbacks?order=id.desc`, { headers }).then(r=>r.json()),
+                    fetch(`${SUPABASE_URL}/rest/v1/complaints?order=id.desc`, { headers }).then(r=>r.json()),
                     fetch(`${SUPABASE_URL}/rest/v1/technicians?order=id.asc`, { headers }).then(r=>r.json())
                 ]);
 
@@ -209,7 +216,7 @@
                     userHtml += `<tr><td>${new Date(u.date).toLocaleDateString('ar-SA')}</td><td>${u.name}</td><td>${u.phone}</td><td>${u.national_address || 'غير محدد'}</td><td><span class="badge">${u.status}</span></td></tr>`;
                 });
                 feds.forEach(f => {
-                    feedHtml += `<tr><td>${f.date}</td><td>${f.name}</td><td>${f.phone}</td><td>${f.type}</td><td>${f.desc}</td></tr>`;
+                    feedHtml += `<tr><td>${f.date ? new Date(f.date).toLocaleDateString('ar-SA') : '-'}</td><td>${f.name}</td><td>${f.phone}</td><td>${f.type}</td><td>${f.desc}</td></tr>`;
                 });
 
                 document.getElementById('admin-users-list').innerHTML = userHtml;
@@ -236,10 +243,15 @@
         async function addProduct() {
             let name = document.getElementById('a-prod-name').value.trim();
             let price = document.getElementById('a-prod-price').value.trim();
+            let type = document.getElementById('a-prod-type').value;
             if(!name || !price) return alert("الرجاء إدخال البيانات كاملة");
 
-            await fetch(`${SUPABASE_URL}/rest/v1/products`, { method: "POST", headers, body: JSON.stringify({ name, price }) });
-            alert("✅ تم نشر الباقة الجديدة!");
+            await fetch(`${SUPABASE_URL}/rest/v1/products`, { 
+                method: "POST", 
+                headers, 
+                body: JSON.stringify({ name, price, type }) 
+            });
+            alert("✅ تم نشر الباقة/الخدمة الجديدة بنجاح!");
             document.getElementById('a-prod-name').value = ''; document.getElementById('a-prod-price').value = '';
             syncAdminData();
         }
