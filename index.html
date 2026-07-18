@@ -3,147 +3,122 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>لوحة الإدارة الشاملة | صيانة+</title>
+    <title>لوحة الفني المعتمد | صيانة+</title>
     <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700;800&display=swap" rel="stylesheet">
     <style>
-        :root { --primary: #1e3a8a; --secondary: #10b981; --bg: #f3f4f6; --white: #ffffff; --text-main: #1f2937; --border: #e5e7eb; }
+        :root { --primary: #0f172a; --secondary: #10b981; --bg: #f8fafc; --white: #ffffff; --text-main: #334155; --border: #cbd5e1; }
         * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Tajawal', sans-serif; }
-        body { background-color: var(--bg); color: var(--text-main); padding: 30px 5%; }
+        body { background-color: var(--bg); color: var(--text-main); padding: 30px 5%; line-height: 1.6; }
         .card { background: var(--white); padding: 25px; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.03); margin-bottom: 25px; border: 1px solid var(--border); overflow-x: auto;}
-        .card-header { font-size: 20px; font-weight: 800; color: var(--primary); margin-bottom: 20px; border-bottom: 2px solid var(--bg); padding-bottom: 10px; display: flex; justify-content: space-between; align-items: center;}
-        .btn { padding: 10px 24px; border: none; border-radius: 8px; cursor: pointer; font-weight: 700; background: var(--primary); color: white; transition: 0.3s; }
+        .card-header { font-size: 20px; font-weight: 800; color: #1e3a8a; margin-bottom: 20px; border-bottom: 2px solid var(--bg); padding-bottom: 10px; display: flex; justify-content: space-between; align-items: center;}
+        .btn { padding: 10px 24px; border: none; border-radius: 8px; cursor: pointer; font-weight: 700; background: #1e3a8a; color: white; transition: 0.3s; font-size: 14px; display: inline-flex; align-items: center; justify-content: center; gap: 5px; }
         .btn:hover { opacity: 0.9; }
         .btn-success { background: var(--secondary); }
-        .form-group { margin-bottom: 20px; text-align: right; flex: 1; min-width: 200px;}
-        input, select { width: 100%; padding: 14px; border: 1px solid var(--border); border-radius: 8px; font-size: 15px; outline: none; margin-top: 5px;}
-        table { width: 100%; border-collapse: collapse; margin-top: 10px; font-size: 14px; min-width: 1250px;}
-        th, td { padding: 15px 10px; text-align: right; border-bottom: 1px solid var(--border); vertical-align: middle;}
-        th { background: var(--bg); color: #6b7280; }
-        .badge { padding: 6px 12px; border-radius: 20px; font-size: 12px; font-weight: bold; background: #d1fae5; color: #10b981; }
+        .btn-warning { background: #f59e0b; }
+        .btn-info { background: #3b82f6; }
+        .btn-map { background: #ea4335; color: white; padding: 6px 12px; font-size: 12px; text-decoration: none; border-radius: 6px; font-weight: bold; }
+        input, textarea, select { width: 100%; padding: 14px; border: 1px solid var(--border); border-radius: 8px; font-size: 15px; outline: none; margin-top: 5px;}
+        table { width: 100%; border-collapse: collapse; margin-top: 10px; font-size: 14px; min-width: 1200px;}
+        th, td { padding: 15px 10px; text-align: right; border-bottom: 1px solid var(--border); vertical-align: middle; }
+        th { background: var(--bg); color: #64748b; }
+        .badge { padding: 6px 12px; border-radius: 20px; font-size: 12px; font-weight: bold; }
+        .badge-pending { background-color: #fee2e2; color: #991b1b; }
+        .badge-way { background-color: #e0f2fe; color: #0369a1; }
+        .badge-working { background-color: #fef3c7; color: #d97706; }
+        .badge-success { background-color: #d1fae5; color: #065f46; }
         nav { background-color: var(--white); padding: 15px 5%; display: flex; justify-content: space-between; align-items: center; box-shadow: 0 4px 6px rgba(0,0,0,0.05); margin:-30px -5.3% 30px -5.3%; }
+        .modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.6); display: none; justify-content: center; align-items: center; z-index: 1000; }
+        .modal-content { background: var(--white); padding: 25px; border-radius: 16px; width: 90%; max-width: 500px; text-align: right; position: relative; }
     </style>
 </head>
 <body>
 
     <nav>
-        <div style="font-size: 24px; font-weight: 800; color: var(--primary);">صيانة<span>+</span> (النظام الإداري المركزي)</div>
+        <div style="font-size: 24px; font-weight: 800; color: #1e3a8a;">صيانة<span>+</span> (منظومة الفنيين)</div>
         <div>
-            <span id="admin-name-display" style="font-weight: bold; margin-left: 15px; color: var(--primary);"></span>
-            <button class="btn" style="background: red;" id="btn-logout" onclick="adminLogout()" style="display: none;">تسجيل خروج الإدارة</button>
+            <span id="tech-name-display" style="font-weight: bold; margin-left: 15px; color: #1e3a8a;"></span>
+            <button class="btn" style="background: #ef4444;" id="btn-logout" onclick="techLogout()" style="display: none;">تسجيل خروج</button>
         </div>
     </nav>
 
-    <!-- تسجيل دخول الإدارة -->
-    <div id="admin-auth-card" class="card" style="max-width: 450px; margin: 60px auto; display: block;">
-        <h2 style="text-align: center; margin-bottom: 20px; color: var(--primary);">تسجيل دخول الإدارة 🔒</h2>
+    <!-- تسجيل دخول الفني -->
+    <div id="tech-auth-card" class="card" style="max-width: 450px; margin: 60px auto; display: block;">
+        <h2 style="text-align: center; margin-bottom: 20px; color: #1e3a8a;">تسجيل دخول الفنيين 👨‍🔧</h2>
         <div style="margin-bottom: 15px;">
-            <label style="font-weight:bold;">رقم جوال المسؤول</label>
-            <input type="tel" id="admin-login-phone" placeholder="05XXXXXXXX">
+            <label style="font-weight:bold;">رقم جوال الفني</label>
+            <input type="tel" id="tech-login-phone" placeholder="05XXXXXXXX">
         </div>
         <div style="margin-bottom: 20px;">
-            <label style="font-weight:bold;">الرقم السري للإدارة</label>
-            <input type="password" id="admin-login-pass" placeholder="******">
+            <label style="font-weight:bold;">الرمز السري الخاص بك</label>
+            <input type="password" id="tech-login-pass" placeholder="******">
         </div>
-        <button class="btn btn-primary" style="width: 100%;" onclick="adminLoginVerification()">دخول لوحة التحكم المركزية</button>
+        <button class="btn" style="width: 100%; background: var(--secondary);" onclick="techLoginVerification()">تسجيل الدخول للمنظومة</button>
     </div>
 
-    <!-- لوحة التحكم الإدارية المركزية -->
-    <div id="admin-dashboard" style="display: none;">
-        
-        <!-- مراقبة مؤشرات الأوقات والتحركات الميدانية المحدثة بفصل الأوقات -->
+    <!-- لوحة التحكم المهام الميدانية للفني -->
+    <div id="tech-dashboard" style="display: none;">
+        <div class="card" style="background: linear-gradient(135deg, #1e3a8a, #3b82f6); color: white; border: none;">
+            <h2>مرحباً بك في جدول مهامك الميدانية النشطة 🛠️</h2>
+            <p style="margin-top: 5px; opacity: 0.9;">يلزم إلزامياً تصوير منزل العميل عند الوصول لإثبات التواجد، ورفع التقرير النهائي عند الإقفال.</p>
+        </div>
+
         <div class="card">
-            <div class="card-header">جدول مراقبة تحركات الفنيين الميدانية ومؤشرات الأداء والأوقات 🔄</div>
+            <div class="card-header">طلبات الصيانة الموجهة لك 🗒️</div>
             <table>
                 <thead>
                     <tr>
                         <th>العميل</th>
-                        <th>الخدمة</th>
-                        <th>الفني المسند</th>
-                        <th>الحالة</th>
-                        <th>وقت الإسناد 🖥️</th>
-                        <th>وقت التحرك 🚖</th>
-                        <th>وقت الوصول 📍</th>
-                        <th>وقت الإقفال 🏁</th>
-                        <th>التقرير الميداني المصور</th>
+                        <th>رقم الجوال</th>
+                        <th>صورة منزل العميل 🏡</th>
+                        <th>موقع العميل والتتبع 📍</th>
+                        <th>الخدمة / وصف العطل</th>
+                        <th>صورة البلاغ</th>
+                        <th>الحالة الحاليّة</th>
+                        <th>تحديث الحالة الميدانية</th>
                     </tr>
                 </thead>
-                <tbody id="admin-active-list"></tbody>
-            </table>
-        </div>
-
-        <!-- قسم إضافة الفنيين -->
-        <div class="card">
-            <div class="card-header">إضافة فني جديد إلى المنظومة 👨‍🔧</div>
-            <div style="display: flex; gap: 15px; flex-wrap: wrap;">
-                <div class="form-group"><label>اسم الفني الكامل</label><input type="text" id="tech-name" placeholder="اسم الفني"></div>
-                <div class="form-group"><label>رقم جوال الفني</label><input type="tel" id="tech-phone" placeholder="05XXXXXXXX"></div>
-                <div class="form-group"><label>الرقم السري للدخول</label><input type="password" id="tech-pass" placeholder="******"></div>
-            </div>
-            <button class="btn btn-success" id="btn-add-tech" onclick="addTechnician()">إنشاء حساب الفني وتفعيله</button>
-        </div>
-
-        <!-- قسم الخدمات والمنتجات -->
-        <div class="card">
-            <div class="card-header">إضافة وتحديث الخدمات والباقات في الرئيسية ➕</div>
-            <div style="display: flex; gap: 15px; flex-wrap: wrap;">
-                <div class="form-group"><label>اسم الخدمة / الباقة</label><input type="text" id="a-prod-name" placeholder="مثال: صيانة التكييف"></div>
-                <div class="form-group"><label>السعر المعروض</label><input type="text" id="a-prod-price" placeholder="مثال: 500 ر.س / سنوياً"></div>
-                <div class="form-group">
-                    <label>نوع المنتج</label>
-                    <select id="a-prod-type" onchange="togglePackageField(this.value)">
-                        <option value="package">باقة اشتراك رئيسية معروضة للزوار</option>
-                        <option value="service">خدمة صيانة فرعية داخلية للمشتركين</option>
-                    </select>
-                </div>
-                <div class="form-group" id="package-link-group" style="display:none;">
-                    <label>تابعة لأي باقة؟</label>
-                    <input type="text" id="a-prod-package-name" value="باقة السباكة والكهرباء">
-                </div>
-            </div>
-            <button class="btn" id="btn-add-prod" onclick="addProduct()">حفظ ونشر في المنظومة</button>
-        </div>
-
-        <!-- سجل العملاء والتحكم في نوع الباقة الممنوحة لهم -->
-        <div class="card">
-            <div class="card-header">سجل العملاء والمشتركين النشطين والتحكم في باقاتهم 👥</div>
-            <table>
-                <thead>
-                    <tr><th>تاريخ التسجيل</th><th>اسم العميل</th><th>رقم الجوال</th><th>العنوان الوطني</th><th>الباقة الحالية المفعلة</th></tr>
-                </thead>
-                <tbody id="admin-users-list"></tbody>
-            </table>
-        </div>
-
-        <!-- سجل الفنيين المعتمدين -->
-        <div class="card">
-            <div class="card-header">قائمة فنيي المنصة المعتمدين وتفاصيلهم 🏅</div>
-            <table>
-                <thead>
-                    <tr><th>اسم الفني</th><th>رقم الجوال</th><th>الرقم السري للتحقق</th></tr>
-                </thead>
-                <tbody id="admin-techs-list"></tbody>
-            </table>
-        </div>
-
-        <!-- صندوق الشكاوى -->
-        <div class="card">
-            <div class="card-header">صندوق الشكاوى والاقتراحات المستلمة 📬</div>
-            <table>
-                <thead>
-                    <tr><th>التاريخ</th><th>الاسم</th><th>رقم الجوال</th><th>النوع</th><th>تفاصيل الرسالة</th></tr>
-                </thead>
-                <tbody id="admin-feedbacks-list"></tbody>
+                <tbody id="tech-tasks-list"></tbody>
             </table>
         </div>
     </div>
 
-    <!-- نافذة مكبرة لعرض التقرير المصور للإدارة -->
-    <div id="image-modal" style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.6); display: none; justify-content: center; align-items: center; z-index: 1000;" onclick="closeImageModal()">
-        <div style="background: var(--white); padding: 25px; border-radius: 16px; max-width: 500px; text-align: right; position: relative;" onclick="event.stopPropagation()">
-            <span style="position: absolute; top: 10px; right: 15px; font-size: 24px; cursor: pointer; color: var(--primary);" onclick="closeImageModal()">&times;</span>
-            <h3 style="color:var(--primary); margin-bottom:10px;">التقرير الفني الختامي المرفق 📄</h3>
-            <p id="modal-report-desc" style="margin-bottom:15px; background:#f8fafc; padding:10px; border-radius:8px; border:1px solid #e2e8f0;"></p>
-            <img id="modal-viewer-img" src="" alt="صورة التقرير الميداني" style="max-width: 100%; max-height: 350px; border-radius: 8px; display:block; margin:auto;">
+    <!-- نافذة إثبات الوصول وتصوير البيت إجبارياً -->
+    <div id="arrival-modal" class="modal-overlay" onclick="closeArrivalModal()">
+        <div class="modal-content" onclick="event.stopPropagation()">
+            <h3 style="color:#1e3a8a; margin-bottom:15px;">📍 إثبات الوصول للموقع (تصوير البيت)</h3>
+            <input type="hidden" id="arrival-task-id">
+            <div style="margin-bottom:20px;">
+                <label style="font-weight:bold;">الرجاء التقاط أو رفع صورة لواجهة منزل العميل الآن:</label>
+                <input type="file" id="tech-arrival-img" accept="image/*" onchange="previewArrivalImage(this)">
+                <img id="arrival-img-preview" style="max-width:100%; max-height:150px; border-radius:8px; margin-top:10px; display:none;">
+            </div>
+            <button class="btn btn-warning" style="width:100%; color: white;" onclick="submitArrivalVerification()">تأكيد الوصول وبدء الإصلاح</button>
+        </div>
+    </div>
+
+    <!-- نافذة إغلاق البلاغ بالتقرير المصور -->
+    <div id="report-modal" class="modal-overlay" onclick="closeReportModal()">
+        <div class="modal-content" onclick="event.stopPropagation()">
+            <h3 style="color:#1e3a8a; margin-bottom:15px;">رفع التقرير المصور وإقفال الباقة 📸</h3>
+            <input type="hidden" id="modal-task-id">
+            <div style="margin-bottom:15px;">
+                <label style="font-weight:bold;">ملخص أعمال الصيانة المنفذة:</label>
+                <textarea id="tech-report-desc" rows="3" placeholder="اكتب ماذا تم للإصلاح بالتفصيل..."></textarea>
+            </div>
+            <div style="margin-bottom:20px;">
+                <label style="font-weight:bold;">صورة إثبات الإنجاز والتقرير:</label>
+                <input type="file" id="tech-report-img" accept="image/*" onchange="previewReportImage(this)">
+                <img id="report-img-preview" style="max-width:100%; max-height:120px; border-radius:8px; margin-top:10px; display:none;">
+            </div>
+            <button class="btn btn-success" style="width:100%;" onclick="submitFinalReport()">إقفال البلاغ وترحيل البيانات للتسوية</button>
+        </div>
+    </div>
+
+    <!-- نافذة مكبرة لمعاينة الصور -->
+    <div id="image-modal" class="modal-overlay" onclick="closeImageModal()">
+        <div class="modal-content" style="max-width:550px; text-align:center;" onclick="event.stopPropagation()">
+            <span style="position: absolute; top: 10px; right: 15px; font-size: 26px; cursor: pointer; color: #1e3a8a;" onclick="closeImageModal()">&times;</span>
+            <img id="modal-viewer-img" src="" alt="معاينة" style="max-width: 100%; max-height: 400px; border-radius: 8px; object-fit: contain;">
         </div>
     </div>
 
@@ -152,155 +127,209 @@
         const SUPABASE_ANON_KEY = "sb_publishable__poVHB0UNhHJfqxUiXHB4g_EiVA_bD3"; 
         const headers = { "apikey": SUPABASE_ANON_KEY, "Authorization": `Bearer ${SUPABASE_ANON_KEY}`, "Content-Type": "application/json" };
 
-        let adminName = localStorage.getItem('admin_approved_name') || '';
+        let currentTechName = localStorage.getItem('tech_approved_name') || '';
+        let tempArrivalImageBase64 = "", tempReportImageBase64 = "";
 
-        if(adminName) startAdminDashboard();
+        if(currentTechName) startTechDashboard();
 
-        function togglePackageField(val) {
-            document.getElementById('package-link-group').style.display = (val === 'service') ? 'block' : 'none';
-        }
-
-        function formatMidianTime(isoString) {
-            if(!isoString) return `<span style="color:#94a3b8;">-</span>`;
-            let d = new Date(isoString);
-            return d.toLocaleTimeString('ar-SA', {hour: '2-digit', minute:'2-digit'});
-        }
-
-        async function adminLoginVerification() {
-            let phone = document.getElementById('admin-login-phone').value.trim();
-            let pass = document.getElementById('admin-login-pass').value.trim();
-            if(!phone || !pass) return alert("الرجاء تعبئة بيانات الدخول");
+        async function techLoginVerification() {
+            let phone = document.getElementById('tech-login-phone').value.trim();
+            let pass = document.getElementById('tech-login-pass').value.trim();
+            if(!phone || !pass) return alert("الرجاء إدخال البيانات كاملة");
 
             try {
-                let res = await fetch(`${SUPABASE_URL}/rest/v1/admins?phone=eq.${phone}&password=eq.${pass}`, { headers }).then(r=>r.json());
+                let res = await fetch(`${SUPABASE_URL}/rest/v1/technicians?phone=eq.${phone}&password=eq.${pass}`, { headers }).then(r=>r.json());
                 if(res && res.length > 0) {
-                    adminName = res[0].name;
-                    localStorage.setItem('admin_approved_name', adminName);
-                    startAdminDashboard();
-                } else { alert("⚠️ خطأ في بيانات الدخول!"); }
-            } catch(e) { alert("فشل الاتصال."); }
+                    currentTechName = res[0].name;
+                    localStorage.setItem('tech_approved_name', currentTechName);
+                    startTechDashboard();
+                } else { alert("⚠️ بيانات الدخول غير صحيحة!"); }
+            } catch(e) { alert("حدث خطأ في الاتصال."); }
         }
 
-        function adminLogout() { localStorage.removeItem('admin_approved_name'); location.reload(); }
-        function startAdminDashboard() {
-            document.getElementById('admin-auth-card').style.display = 'none';
-            document.getElementById('admin-dashboard').style.display = 'block';
+        function techLogout() { localStorage.removeItem('tech_approved_name'); location.reload(); }
+        function startTechDashboard() {
+            document.getElementById('tech-auth-card').style.display = 'none';
+            document.getElementById('tech-dashboard').style.display = 'block';
             document.getElementById('btn-logout').style.display = 'inline-block';
-            document.getElementById('admin-name-display').innerText = "المسؤول: " + adminName;
-            syncAdminData(); setInterval(syncAdminData, 4000);
+            document.getElementById('tech-name-display').innerText = "الفني: " + currentTechName;
+            syncTechTasks(); setInterval(syncTechTasks, 5000);
         }
 
-        async function syncAdminData() {
+        async function syncTechTasks() {
             try {
-                const [reqs, usrs, feds, techs] = await Promise.all([
-                    fetch(`${SUPABASE_URL}/rest/v1/requests?order=id.desc`, { headers }).then(r=>r.json()),
-                    fetch(`${SUPABASE_URL}/rest/v1/users?order=id.desc`, { headers }).then(r=>r.json()),
-                    fetch(`${SUPABASE_URL}/rest/v1/complaints?order=id.desc`, { headers }).then(r=>r.json()),
-                    fetch(`${SUPABASE_URL}/rest/v1/technicians?order=id.asc`, { headers }).then(r=>r.json())
+                const [reqs, usrs] = await Promise.all([
+                    fetch(`${SUPABASE_URL}/rest/v1/requests?tech=eq.${encodeURIComponent(currentTechName)}&order=id.desc`, { headers }).then(r=>r.json()),
+                    fetch(`${SUPABASE_URL}/rest/v1/users`, { headers }).then(r=>r.json())
                 ]);
 
-                let techHtml = '';
-                techs.forEach(t => { techHtml += `<tr><td>${t.name}</td><td>${t.phone}</td><td><code>${t.password}</code></td></tr>`; });
-                document.getElementById('admin-techs-list').innerHTML = techHtml;
+                let tasksHtml = '';
+                
+                if(reqs && reqs.length > 0) {
+                    reqs.forEach(r => {
+                        let statusText = r.status || 'قيد الانتظار';
+                        let badgeClass = 'badge-pending';
+                        let actionButtons = '';
 
-                let activeHtml = '';
-                reqs.forEach(r => {
-                    let selectOptions = `<option value="">-- إسناد فني للطلب --</option>`;
-                    techs.forEach(t => {
-                        let selected = r.tech === t.name ? 'selected' : '';
-                        selectOptions += `<option value="${t.name}" ${selected}>${t.name}</option>`;
+                        // إدارة أزرار الحركة الميدانية الصارمة
+                        if (statusText === 'جاري العمل' || statusText === 'قيد الانتظار') {
+                            actionButtons = `<button class="btn btn-info" onclick="updateMidianStatus(${r.id}, 'في الطريق')">🚖 تحركت (في الطريق)</button>`;
+                            badgeClass = 'badge-pending';
+                        } else if (statusText === 'في الطريق') {
+                            actionButtons = `<button class="btn btn-warning" onclick="openArrivalModal(${r.id})">📍 وصلت (تصوير البيت)</button>`;
+                            badgeClass = 'badge-way';
+                        } else if (statusText === 'وصلت للموقع') {
+                            actionButtons = `<button class="btn btn-success" onclick="openReportModal(${r.id})">📸 إنهاء ورفع التقرير</button>`;
+                            badgeClass = 'badge-working';
+                        } else if (statusText === 'مكتمل') {
+                            actionButtons = `<span style="color:var(--secondary); font-weight:bold;">✅ تم التقفيل والترحيل</span>`;
+                            badgeClass = 'badge-success';
+                        }
+
+                        let userRecord = usrs.find(u => u.phone && r.phone && u.phone.toString().trim() === r.phone.toString().trim());
+                        
+                        // ميزة استدعاء وعرض صورة بيت العميل للفني للمطابقة والوصول الذكي
+                        let houseImgHtml = '<span style="color:#94a3b8; font-size:12px;">لا توجد صورة</span>';
+                        if(userRecord && userRecord.house_image) {
+                            houseImgHtml = `<img src="${userRecord.house_image}" style="width:60px; height:60px; border-radius:8px; object-fit:cover; cursor:pointer; border:2px solid #1e3a8a;" onclick="openImageModal('${userRecord.house_image}')">`;
+                        }
+
+                        let mapLocationHtml = '';
+                        if(userRecord && userRecord.lat && userRecord.lng) {
+                            let googleMapsUrl = `https://www.google.com/maps/search/?api=1&query=${userRecord.lat},${userRecord.lng}`;
+                            mapLocationHtml = `<a href="${googleMapsUrl}" target="_blank" class="btn-map">🗺️ اتجاهات الموقع</a><br><small style="color:#64748b; font-size:11px;">${userRecord.national_address || 'العنوان الوطني'}</small>`;
+                        } else {
+                            mapLocationHtml = `<span style="color:#94a3b8; font-size:12px;">📍 العنوان نصي فقط</span>`;
+                        }
+
+                        let imgHtml = r.image ? `<img src="${r.image}" style="width:45px; height:45px; border-radius:6px; object-fit:cover; cursor:pointer;" onclick="openImageModal('${r.image}')">` : 'لا توجد';
+
+                        tasksHtml += `<tr>
+                            <td><strong>${r.user}</strong></td>
+                            <td>${r.phone}</td>
+                            <td>${houseImgHtml}</td>
+                            <td>${mapLocationHtml}</td>
+                            <td><strong>${r.service}</strong><br><small>${r.desc || '-'}</small></td>
+                            <td>${imgHtml}</td>
+                            <td><span class="badge ${badgeClass}">${statusText}</span></td>
+                            <td>${actionButtons}</td>
+                        </tr>`;
                     });
-
-                    let reportButton = r.report_image ? 
-                        `<button class="btn btn-success" style="padding:4px 10px; font-size:12px;" onclick="viewFinalReport('${encodeURIComponent(r.report_desc)}', '${r.report_image}')">👁️ عرض التقرير</button>` : 
-                        `<span style="color:#94a3b8;">قيد العمل</span>`;
-
-                    activeHtml += `<tr>
-                        <td><strong>${r.user}</strong><br><small style="color:#64748b;">${r.phone}</small></td>
-                        <td>${r.service}</td>
-                        <td>
-                            <select onchange="assignTechToRequest(${r.id}, this.value)" style="padding:5px; border-radius:6px; margin:0; font-size:13px;">${selectOptions}</select>
-                        </td>
-                        <td><span class="badge" style="background:#f1f5f9; color:#0f172a;">${r.status}</span></td>
-                        <td>${formatMidianTime(r.assigned_at)}</td>
-                        <td>${formatMidianTime(r.accepted_at)}</td>
-                        <td>${formatMidianTime(r.arrived_at)}</td>
-                        <td>${formatMidianTime(r.completed_at)}</td>
-                        <td>${reportButton}</td>
-                    </tr>`;
-                });
-                document.getElementById('admin-active-list').innerHTML = activeHtml;
-
-                let userHtml = '', feedHtml = '';
-                usrs.forEach(u => {
-                    userHtml += `<tr><td>${new Date(u.date).toLocaleDateString('ar-SA')}</td><td>${u.name}</td><td>${u.phone}</td><td>${u.national_address || 'غير مححدد'}</td><td><input type="text" value="${u.package_name || 'باقة السباكة والكهرباء'}" onchange="updateUserPackage(${u.id}, this.value)" style="padding:6px; margin:0; font-size:13px;"></td></tr>`;
-                });
-                feds.forEach(f => {
-                    feedHtml += `<tr><td>${f.date ? new Date(f.date).toLocaleDateString('ar-SA') : '-'}</td><td>${f.name}</td><td>${f.phone}</td><td>${f.type}</td><td>${f.desc}</td></tr>`;
-                });
-
-                document.getElementById('admin-users-list').innerHTML = userHtml;
-                document.getElementById('admin-feedbacks-list').innerHTML = feedHtml;
+                } else {
+                    tasksHtml = `<tr><td colspan="8" style="text-align:center; padding:30px; color:#94a3b8;">لا توجد مهام نشطة حالياً.</td></tr>`;
+                }
+                document.getElementById('tech-tasks-list').innerHTML = tasksHtml;
             } catch(e) { console.error(e); }
         }
 
-        async function updateUserPackage(id, newPackage) {
-            await fetch(`${SUPABASE_URL}/rest/v1/users?id=eq.${id}`, { method: "PATCH", headers, body: JSON.stringify({ package_name: newPackage }) });
+        async function updateMidianStatus(id, nextStatus) {
+            let payload = { status: nextStatus, accepted_at: new Date().toISOString() };
+            await fetch(`${SUPABASE_URL}/rest/v1/requests?id=eq.${id}`, { method: "PATCH", headers, body: JSON.stringify(payload) });
+            syncTechTasks();
         }
 
-        async function addTechnician() {
-            let name = document.getElementById('tech-name').value.trim();
-            let phone = document.getElementById('tech-phone').value.trim();
-            let password = document.getElementById('tech-pass').value.trim();
-            if(!name || !phone || !password) return alert("الرجاء تعبئة البيانات كاملة");
-
-            let res = await fetch(`${SUPABASE_URL}/rest/v1/technicians`, { method: "POST", headers, body: JSON.stringify({ name, phone, password }) });
-            if(res.ok) { alert("✅ تم إضافة الفني!"); syncAdminData(); }
+        // نافذة الوصول وتصوير البيت
+        function openArrivalModal(id) {
+            document.getElementById('arrival-task-id').value = id;
+            document.getElementById('tech-arrival-img').value = '';
+            document.getElementById('arrival-img-preview').style.display = 'none';
+            tempArrivalImageBase64 = "";
+            document.getElementById('arrival-modal').style.display = 'flex';
         }
+        function closeArrivalModal() { document.getElementById('arrival-modal').style.display = 'none'; }
 
-        async function addProduct() {
-            let name = document.getElementById('a-prod-name').value.trim();
-            let price = document.getElementById('a-prod-price').value.trim();
-            let type = document.getElementById('a-prod-type').value;
-            let belongs_to = document.getElementById('a-prod-package-name').value.trim();
-            if(!name || !price) return alert("الرجاء إدخال البيانات كاملة");
-
-            await fetch(`${SUPABASE_URL}/rest/v1/products`, { method: "POST", headers, body: JSON.stringify({ name, price, type, belongs_to_package: belongs_to }) });
-            alert("✅ تم الحفظ والنشر!"); syncAdminData();
-        }
-
-        // 🖥️ [تحديث دالة الإسناد]: تسجل فقط وقت تكليف الإدارة للطلب في حقل assigned_at
-        async function assignTechToRequest(id, techName) {
-            let payload = { tech: techName };
-            
-            if(techName) {
-                payload.status = 'جاري العمل';
-                payload.assigned_at = new Date().toISOString(); // توثيق تاريخ تكليف الإدارة للفني بدقة
-            } else {
-                payload.status = 'قيد الانتظار';
-                payload.assigned_at = null;
-                payload.accepted_at = null;
+        function previewArrivalImage(input) {
+            let file = input.files[0];
+            if(file) {
+                let reader = new FileReader();
+                reader.onload = (e) => {
+                    let img = new Image();
+                    img.onload = () => {
+                        let canvas = document.createElement('canvas');
+                        canvas.width = 400; canvas.height = 400;
+                        canvas.getContext('2d').drawImage(img, 0, 0, 400, 400);
+                        tempArrivalImageBase64 = canvas.toDataURL('image/jpeg', 0.5);
+                        document.getElementById('arrival-img-preview').src = tempArrivalImageBase64;
+                        document.getElementById('arrival-img-preview').style.display = 'block';
+                    }
+                    img.src = e.target.result;
+                };
+                reader.readAsDataURL(file);
             }
+        }
 
-            let res = await fetch(`${SUPABASE_URL}/rest/v1/requests?id=eq.${id}`, { 
-                method: "PATCH", 
-                headers, 
-                body: JSON.stringify(payload) 
-            });
+        async function submitArrivalVerification() {
+            let id = document.getElementById('arrival-task-id').value;
+            if(!tempArrivalImageBase64) return alert("⚠️ إلزامياً! يجب التقاط وصورة واجهة المنزل لتأكيد الوصول للموقع.");
 
+            let payload = {
+                status: 'وصلت للموقع',
+                arrived_at: new Date().toISOString(),
+                arrival_house_image: tempArrivalImageBase64
+            };
+
+            let res = await fetch(`${SUPABASE_URL}/rest/v1/requests?id=eq.${id}`, { method: "PATCH", headers, body: JSON.stringify(payload) });
             if(res.ok) {
-                alert("⚙️ تم تكليف وإسناد الطلب للفني وتسجيل وقت الإدارة المركزي.");
-                syncAdminData();
-            } else {
-                alert("❌ فشل تحديث إسناد الفني.");
+                alert("📍 تم توثيق وصولك للموقع وصورة البيت بنجاح. ابدأ العمل الآن!");
+                closeArrivalModal();
+                syncTechTasks();
             }
         }
 
-        function viewFinalReport(desc, img) {
-            document.getElementById('modal-report-desc').innerText = decodeURIComponent(desc);
-            document.getElementById('modal-viewer-img').src = img;
-            document.getElementById('image-modal').style.display = 'flex';
+        // نافذة التقرير النهائي والإقفال
+        function openReportModal(id) {
+            document.getElementById('modal-task-id').value = id;
+            document.getElementById('tech-report-desc').value = '';
+            document.getElementById('tech-report-img').value = '';
+            document.getElementById('report-img-preview').style.display = 'none';
+            tempReportImageBase64 = "";
+            document.getElementById('report-modal').style.display = 'flex';
         }
+        function closeReportModal() { document.getElementById('report-modal').style.display = 'none'; }
+
+        function previewReportImage(input) {
+            let file = input.files[0];
+            if(file) {
+                let reader = new FileReader();
+                reader.onload = (e) => {
+                    let img = new Image();
+                    img.onload = () => {
+                        let canvas = document.createElement('canvas');
+                        canvas.width = 400; canvas.height = 400;
+                        canvas.getContext('2d').drawImage(img, 0, 0, 400, 400);
+                        tempReportImageBase64 = canvas.toDataURL('image/jpeg', 0.5);
+                        document.getElementById('report-img-preview').src = tempReportImageBase64;
+                        document.getElementById('report-img-preview').style.display = 'block';
+                    }
+                    img.src = e.target.result;
+                };
+                reader.readAsDataURL(file);
+            }
+        }
+
+        async function submitFinalReport() {
+            let id = document.getElementById('modal-task-id').value;
+            let desc = document.getElementById('tech-report-desc').value.trim();
+
+            if(!desc) return alert("⚠️ يرجى كتابة وصف أعمال الصيانة المنفذة للبلاغ!");
+            if(!tempReportImageBase64) return alert("⚠️ يرجى إلزامياً التقاط وصورة التقرير المصور للإنجاز!");
+
+            let payload = {
+                status: 'مكتمل',
+                report_desc: desc,
+                report_image: tempReportImageBase64,
+                completed_at: new Date().toISOString()
+            };
+
+            let res = await fetch(`${SUPABASE_URL}/rest/v1/requests?id=eq.${id}`, { method: "PATCH", headers, body: JSON.stringify(payload) });
+            if(res.ok) {
+                alert("✅ تم رفع التقرير وإقفال البلاغ وإشعار الإدارة بنجاح!");
+                closeReportModal();
+                syncTechTasks();
+            }
+        }
+
+        function openImageModal(src) { document.getElementById('modal-viewer-img').src = src; document.getElementById('image-modal').style.display = 'flex'; }
         function closeImageModal() { document.getElementById('image-modal').style.display = 'none'; }
     </script>
 </body>
