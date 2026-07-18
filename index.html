@@ -60,7 +60,7 @@
                         <th>الخدمة</th>
                         <th>الفني المسند</th>
                         <th>الحالة</th>
-                        <th>وقت التحرك</th>
+                        <th>وقت الإسناد (التحرك)</th>
                         <th>وقت الوصول</th>
                         <th>وقت الإقفال</th>
                         <th>التقرير الميداني المصور</th>
@@ -202,7 +202,6 @@
                 techs.forEach(t => { techHtml += `<tr><td>${t.name}</td><td>${t.phone}</td><td><code>${t.password}</code></td></tr>`; });
                 document.getElementById('admin-techs-list').innerHTML = techHtml;
 
-                // إسناد الطلبات ومراقبة التحركات ميدانياً للأدمن
                 let activeHtml = '';
                 reqs.forEach(r => {
                     let selectOptions = `<option value="">-- إسناد فني للطلب --</option>`;
@@ -268,11 +267,30 @@
             alert("✅ تم الحفظ والنشر!"); syncAdminData();
         }
 
+        // 🛠️ [الدالة المحدثة لتسجيل وقت الإسناد فوراً بدقة]
         async function assignTechToRequest(id, techName) {
             let payload = { tech: techName };
-            if(techName) payload.status = 'جاري العمل';
-            await fetch(`${SUPABASE_URL}/rest/v1/requests?id=eq.${id}`, { method: "PATCH", headers, body: JSON.stringify(payload) });
-            alert("⚙️ تم إسناد الطلب للفني."); syncAdminData();
+            
+            if(techName) {
+                payload.status = 'جاري العمل';
+                payload.accepted_at = new Date().toISOString(); // تسجيل تاريخ ووقت الإسناد والتحرك اللحظي
+            } else {
+                payload.status = 'قيد الانتظار';
+                payload.accepted_at = null;
+            }
+
+            let res = await fetch(`${SUPABASE_URL}/rest/v1/requests?id=eq.${id}`, { 
+                method: "PATCH", 
+                headers, 
+                body: JSON.stringify(payload) 
+            });
+
+            if(res.ok) {
+                alert("⚙️ تم إسناد الطلب للفني وتسجيل وقت بدء المهمة بنجاح.");
+                syncAdminData();
+            } else {
+                alert("❌ فشل تحديث إسناد الفني، يرجى التحقق من الاتصال.");
+            }
         }
 
         function viewFinalReport(desc, img) {
