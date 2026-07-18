@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>لوحة الإدارة الشاملة | صيانة+</title>
+    <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700;800&display=swap" rel="stylesheet">
+    <style>
+        :root { --primary: #111827; --secondary: #10b981; --bg: #f3f4f6; --white: #ffffff; --text-main: #1f2937; --border: #e5e7eb; }
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Tajawal', sans-serif; }
+        body { background-color: var(--bg); color: var(--text-main); padding: 30px 5%; }
+        .card { background: var(--white); padding: 25px; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.03); margin-bottom: 25px; border: 1px solid var(--border); overflow-x: auto;}
+        .card-header { font-size: 20px; font-weight: 800; color: #1e3a8a; margin-bottom: 20px; border-bottom: 2px solid var(--bg); padding-bottom: 10px;}
+        .btn { padding: 10px 24px; border: none; border-radius: 8px; cursor: pointer; font-weight: 700; background: #1e3a8a; color: white; }
+        .form-group { margin-bottom: 20px; text-align: right; flex: 1;}
+        input { width: 100%; padding: 14px; border: 1px solid var(--border); border-radius: 8px; }
+        table { width: 100%; border-collapse: collapse; margin-top: 10px; font-size: 14px; min-width: 800px;}
+        th, td { padding: 15px 10px; text-align: right; border-bottom: 1px solid var(--border); }
+        th { background: var(--bg); color: #6b7280; }
+        .badge { padding: 6px 12px; border-radius: 20px; font-size: 12px; font-weight: bold; background: #d1fae5; color: #10b981; }
+    </style>
+</head>
+<body>
+
+    <div class="card" style="background: linear-gradient(135deg, #1f2937, #111827); color: white; border: none;">
+        <h2>لوحة الإدارة الشاملة والمراقبة المركزية للنظام 📊</h2>
+    </div>
+
+    <div class="card">
+        <div class="card-header">إضافة خدمات وباقات للرئيسية ➕</div>
+        <div style="display: flex; gap: 15px; flex-wrap: wrap;">
+            <div class="form-group"><label>اسم الخدمة</label><input type="text" id="a-prod-name" placeholder="مثال: صيانة التكييف المركزي"></div>
+            <div class="form-group"><label>السعر المعروض</label><input type="text" id="a-prod-price" placeholder="مثال: مجاناً للمشتركين"></div>
+        </div>
+        <button class="btn" id="btn-add-prod" onclick="addProduct()">إضافة ونشر للرئيسية</button>
+    </div>
+
+    <div class="card">
+        <div class="card-header">طلبات الصيانة النشطة والانتظار 🔄</div>
+        <table>
+            <thead>
+                <tr><th>العميل</th><th>الجوال</th><th>الخدمة</th><th>الوصف</th><th>الفني الحالي</th><th>الحالة</th></tr>
+            </thead>
+            <tbody id="admin-active-list"></tbody>
+        </table>
+    </div>
+
+    <div class="card">
+        <div class="card-header">سجل المشتركين الفاعلين 👥</div>
+        <table>
+            <thead>
+                <tr><th>تاريخ التسجيل</th><th>اسم العميل</th><th>رقم الجوال</th><th>العنوان الوطني</th><th>حالة الاشتراك</th></tr>
+            </thead>
+            <tbody id="admin-users-list"></tbody>
+        </table>
+    </div>
+
+    <div class="card">
+        <div class="card-header">صندوق الشكاوى والاقتراحات المستلمة الباطنية 📬</div>
+        <table>
+            <thead>
+                <tr><th>التاريخ</th><th>الاسم</th><th>رقم الجوال</th><th>النوع</th><th>تفاصيل الرسالة</th></tr>
+            </thead>
+            <tbody id="admin-feedbacks-list"></tbody>
+        </table>
+    </div>
+
+    <script>
+        const SUPABASE_URL = "https://jgknbvifcgajutbxccsc.supabase.co"; 
+        const SUPABASE_ANON_KEY = "sb_publishable__poVHB0UNhHJfqxUiXHB4g_EiVA_bD3"; 
+        const headers = { "apikey": SUPABASE_ANON_KEY, "Authorization": `Bearer ${SUPABASE_ANON_KEY}`, "Content-Type": "application/json" };
+
+        async function syncAdminData() {
+            try {
+                const [reqs, usrs, feds] = await Promise.all([
+                    fetch(`${SUPABASE_URL}/rest/v1/requests?order=id.desc`, { headers }).then(r=>r.json()),
+                    fetch(`${SUPABASE_URL}/rest/v1/users?order=id.desc`, { headers }).then(r=>r.json()),
+                    fetch(`${SUPABASE_URL}/rest/v1/feedbacks?order=id.desc`, { headers }).then(r=>r.json())
+                ]);
+
+                let activeHtml = '', userHtml = '', feedHtml = '';
+
+                reqs.forEach(r => {
+                    activeHtml += `<tr><td>${r.user}</td><td>${r.phone}</td><td>${r.service}</td><td>${r.desc}</td><td>${r.tech || 'في انتظار فني'}</td><td><span class="badge" style="background:#fef3c7; color:#d97706;">${r.status}</span></td></tr>`;
+                });
+                usrs.forEach(u => {
+                    userHtml += `<tr><td>${new Date(u.date).toLocaleDateString('ar-SA')}</td><td>${u.name}</td><td>${u.phone}</td><td>${u.national_address || 'غير محدد'}</td><td><span class="badge">${u.status}</span></td></tr>`;
+                });
+                feds.forEach(f => {
+                    feedHtml += `<tr><td>${f.date}</td><td>${f.name}</td><td>${f.phone}</td><td>${f.type}</td><td>${f.desc}</td></tr>`;
+                });
+
+                document.getElementById('admin-active-list').innerHTML = activeHtml;
+                document.getElementById('admin-users-list').innerHTML = userHtml;
+                document.getElementById('admin-feedbacks-list').innerHTML = feedHtml;
+            } catch(e) { console.error(e); }
+        }
+
+        async function addProduct() {
+            let name = document.getElementById('a-prod-name').value.trim();
+            let price = document.getElementById('a-prod-price').value.trim();
+            if(!name || !price) return alert("الرجاء إدخال البيانات كاملة");
+
+            await fetch(`${SUPABASE_URL}/rest/v1/products`, { method: "POST", headers, body: JSON.stringify({ name, price }) });
+            alert("✅ تم نشر الخدمة بنجاح!");
+            document.getElementById('a-prod-name').value = ''; document.getElementById('a-prod-price').value = '';
+            syncAdminData();
+        }
+
+        window.onload = () => { syncAdminData(); setInterval(syncAdminData, 5000); };
+    </script>
+</body>
+</html>
