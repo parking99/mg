@@ -3,135 +3,190 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>لوحة الإدارة الشاملة | صيانة+</title>
+    <title>صيانة+ | المنصة الشاملة</title>
     <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
     <style>
-        :root { --primary: #1e3a8a; --secondary: #10b981; --bg: #f3f4f6; --white: #ffffff; --text-main: #1f2937; --border: #e5e7eb; }
+        :root { --primary: #1e3a8a; --secondary: #f59e0b; --bg: #f8fafc; --white: #ffffff; --text-main: #1f2937; --border: #e2e8f0; --success: #10b981; }
         * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Tajawal', sans-serif; }
-        body { background-color: var(--bg); color: var(--text-main); padding: 30px 5%; }
+        body { background-color: var(--bg); color: var(--text-main); line-height: 1.6; }
+        nav { background-color: var(--white); padding: 15px 5%; display: flex; justify-content: space-between; align-items: center; box-shadow: 0 4px 6px rgba(0,0,0,0.05); position: sticky; top: 0; z-index: 100; }
+        .logo { font-size: 28px; font-weight: 800; color: var(--primary); cursor: pointer;}
+        .logo span { color: var(--secondary); }
+        .btn { padding: 10px 24px; border: none; border-radius: 8px; cursor: pointer; font-weight: 700; font-size: 16px; transition: 0.3s; }
+        .btn-primary { background: var(--primary); color: var(--white); }
+        .btn-secondary { background: var(--secondary); color: var(--white); }
+        .btn-outline { background: transparent; border: 2px solid var(--primary); color: var(--primary); }
+        .page-view { display: none; animation: fadeIn 0.4s ease-in-out; }
+        .page-view.active { display: block; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+        .hero { background: linear-gradient(to left, rgba(30, 58, 138, 0.9), rgba(30, 58, 138, 0.7)), url('https://images.unsplash.com/photo-1581094288338-2314dddb7ece?ixlib=rb-1.2.1&auto=format&fit=crop&w=1950&q=80') center/cover; color: var(--white); text-align: center; padding: 80px 20px; }
+        .hero h1 { font-size: 3.5rem; margin-bottom: 20px; }
+        .services-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); gap: 20px; margin-top: 30px; padding: 20px 5%; max-width: 1200px; margin: auto;}
+        .service-card { background: var(--white); padding: 25px; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); border: 1px solid var(--border); text-align: center;}
+        .service-card h3 { color: var(--primary); margin-bottom: 10px;}
+        .service-card .price { color: var(--secondary); font-weight: 800; font-size: 18px; }
+        .auth-container { max-width: 450px; margin: 40px auto; background: var(--white); padding: 40px; border-radius: 16px; box-shadow: 0 10px 25px rgba(0,0,0,0.05); }
+        .form-group { margin-bottom: 20px; text-align: right;}
+        label { display: block; margin-bottom: 8px; font-weight: 700; font-size: 14px; }
+        input, select, textarea { width: 100%; padding: 14px; border: 1px solid var(--border); border-radius: 8px; font-size: 15px; outline: none;}
+        .preview-img { max-width: 100%; max-height: 150px; border-radius: 8px; margin-top: 10px; border: 1px solid var(--border); display: none; }
+        .dashboard-container { padding: 40px 5%; max-width: 1200px; margin: auto; }
         .card { background: var(--white); padding: 25px; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.03); margin-bottom: 25px; border: 1px solid var(--border); overflow-x: auto;}
         .card-header { font-size: 20px; font-weight: 800; color: var(--primary); margin-bottom: 20px; border-bottom: 2px solid var(--bg); padding-bottom: 10px; display: flex; justify-content: space-between; align-items: center;}
-        .btn { padding: 10px 24px; border: none; border-radius: 8px; cursor: pointer; font-weight: 700; background: var(--primary); color: white; transition: 0.3s; }
-        .btn:hover { opacity: 0.9; }
-        .btn-success { background: var(--secondary); }
-        .form-group { margin-bottom: 20px; text-align: right; flex: 1; min-width: 200px;}
-        input, select { width: 100%; padding: 14px; border: 1px solid var(--border); border-radius: 8px; font-size: 15px; outline: none; margin-top: 5px;}
         table { width: 100%; border-collapse: collapse; margin-top: 10px; font-size: 14px; min-width: 800px;}
         th, td { padding: 15px 10px; text-align: right; border-bottom: 1px solid var(--border); }
         th { background: var(--bg); color: #6b7280; }
-        .badge { padding: 6px 12px; border-radius: 20px; font-size: 12px; font-weight: bold; background: #d1fae5; color: #10b981; }
-        nav { background-color: var(--white); padding: 15px 5%; display: flex; justify-content: space-between; align-items: center; box-shadow: 0 4px 6px rgba(0,0,0,0.05); margin:-30px -5.3% 30px -5.3%; }
+        .badge { padding: 6px 12px; border-radius: 20px; font-size: 12px; font-weight: bold; }
+        
+        .badge-success { background-color: #d1fae5; color: #065f46; }
+        .badge-working { background-color: #fef3c7; color: #92400e; }
+        .badge-pending { background-color: #fee2e2; color: #991b1b; }
+
+        .stats-grid { display: flex; gap: 15px; margin-top: 15px; flex-wrap: wrap;}
+        .stat-box { background: rgba(255,255,255,0.1); padding: 15px; border-radius: 10px; flex: 1; min-width: 200px; border: 1px solid rgba(255,255,255,0.2);}
+        .stat-title { font-size: 14px; opacity: 0.9; margin-bottom: 5px;}
+        .stat-val { font-size: 20px; font-weight: bold; }
     </style>
 </head>
 <body>
 
-    <nav>
-        <div style="font-size: 24px; font-weight: 800; color: var(--primary);">صيانة<span>+</span> (النظام الإداري)</div>
-        <div>
-            <span id="admin-name-display" style="font-weight: bold; margin-left: 15px; color: var(--primary);"></span>
-            <button class="btn" style="background: red;" id="btn-logout" onclick="adminLogout()" style="display: none;">تسجيل خروج الإدارة</button>
+    <div id="image-modal" class="modal-overlay" style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); display: none; justify-content: center; align-items: center; z-index: 1000;" onclick="closeImageModal()">
+        <div class="modal-content" style="background: var(--white); padding: 30px; border-radius: 16px; max-width: 600px; text-align: center; position: relative;" onclick="event.stopPropagation()">
+            <span style="position: absolute; top: 10px; right: 15px; font-size: 24px; cursor: pointer; color: var(--primary);" onclick="closeImageModal()">&times;</span>
+            <img id="modal-viewer-img" src="" alt="صورة مكبرة" style="max-width: 100%; max-height: 450px; border-radius: 8px;">
         </div>
-    </nav>
-
-    <div id="admin-auth-card" class="card" style="max-width: 450px; margin: 60px auto; display: block;">
-        <h2 style="text-align: center; margin-bottom: 20px; color: var(--primary);">تسجيل دخول الإدارة 🔒</h2>
-        <div style="margin-bottom: 15px;">
-            <label style="font-weight:bold;">رقم جوال المسؤول</label>
-            <input type="tel" id="admin-login-phone" placeholder="05XXXXXXXX">
-        </div>
-        <div style="margin-bottom: 20px;">
-            <label style="font-weight:bold;">الرقم السري للإدارة</label>
-            <input type="password" id="admin-login-pass" placeholder="******">
-        </div>
-        <button class="btn btn-primary" style="width: 100%;" onclick="adminLoginVerification()">دخول لوحة التحكم التحكم المركزية</button>
     </div>
 
-    <div id="admin-dashboard" style="display: none;">
-        <div class="card" style="background: linear-gradient(135deg, #1f2937, #111827); color: white; border: none;">
-            <h2>مرحباً بك في لوحة الإدارة والتحكم بالصلاحيات وحصر الباقات 📊</h2>
-        </div>
-
-        <!-- قسم إضافة الفنيين -->
-        <div class="card">
-            <div class="card-header">إضافة فني جديد إلى المنظومة 👨‍🔧</div>
-            <div style="display: flex; gap: 15px; flex-wrap: wrap;">
-                <div class="form-group"><label>اسم الفني الكامل</label><input type="text" id="tech-name" placeholder="اسم الفني"></div>
-                <div class="form-group"><label>رقم جوال الفني</label><input type="tel" id="tech-phone" placeholder="05XXXXXXXX"></div>
-                <div class="form-group"><label>الرقم السري للدخول</label><input type="password" id="tech-pass" placeholder="******"></div>
+    <div id="otp-modal" class="modal-overlay" style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); display: none; justify-content: center; align-items: center; z-index: 1000;">
+        <div class="modal-content" style="background: var(--white); padding: 30px; border-radius: 16px; width: 90%; max-width: 400px; text-align: center;">
+            <h3>التحقق من الدفع 🔒</h3>
+            <div class="otp-inputs" style="display: flex; gap: 10px; justify-content: center; margin: 20px 0; direction: ltr;">
+                <input type="text" maxlength="1" onkeyup="moveToNext(this, 'otp2')" style="width: 50px; height: 50px; text-align: center; font-size: 24px; border: 2px solid var(--border); border-radius: 8px;">
+                <input type="text" maxlength="1" id="otp2" onkeyup="moveToNext(this, 'otp3')" style="width: 50px; height: 50px; text-align: center; font-size: 24px; border: 2px solid var(--border); border-radius: 8px;">
+                <input type="text" maxlength="1" id="otp3" onkeyup="moveToNext(this, 'otp4')" style="width: 50px; height: 50px; text-align: center; font-size: 24px; border: 2px solid var(--border); border-radius: 8px;">
+                <input type="text" maxlength="1" id="otp4" style="width: 50px; height: 50px; text-align: center; font-size: 24px; border: 2px solid var(--border); border-radius: 8px;">
             </div>
-            <button class="btn btn-success" id="btn-add-tech" onclick="addTechnician()">إنشاء حساب الفني وتفعيله</button>
+            <button class="btn btn-primary" style="width: 100%;" onclick="verifyPaymentAndRegister()">تأكيد الدفع والتفعيل</button>
         </div>
+    </div>
 
-        <!-- قسم الخدمات المطور لحصر التبعية -->
-        <div class="card">
-            <div class="card-header">إضافة وتحديث الخدمات والباقات في المنظومة ➕</div>
+    <nav>
+        <div class="logo" onclick="navigate('home')">صيانة<span>+</span></div>
+        <div class="nav-links" id="nav-links-container"></div>
+    </nav>
+
+    <!-- 1. الرئيسية -->
+    <div id="page-home" class="page-view active">
+        <section class="hero">
+            <h1>راحة بالك.. طوال العام</h1>
+            <p style="font-size: 1.3rem; margin-bottom: 30px;">اشترك الآن في باقة السباكة والكهرباء وتمتع بالصيانة الفورية.</p>
+            <button class="btn btn-secondary" style="padding: 15px 40px; font-size: 1.5rem;" onclick="navigate('register')">اشترك بـ 500 ريال سنوياً</button>
+        </section>
+        <div class="services-grid" id="home-products-grid"></div>
+        
+        <section style="max-width: 800px; margin: 40px auto; padding: 25px; background: var(--white); border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); border: 1px solid var(--border);">
+            <h3 style="color: var(--primary); text-align: center; margin-bottom: 15px;">الشكاوى والاقتراحات ✉️</h3>
             <div style="display: flex; gap: 15px; flex-wrap: wrap;">
-                <div class="form-group"><label>اسم الخدمة / الباقة</label><input type="text" id="a-prod-name" placeholder="مثال: تركيب مفاتيح أو باقة تكييف منفرة"></div>
-                <div class="form-group"><label>السعر المعروض</label><input type="text" id="a-prod-price" placeholder="مثال: مشمول بالاشتراك أو 400 ر.س"></div>
+                <div class="form-group" style="flex: 1;"><label>الاسم الكامل</label><input type="text" id="feedback-name"></div>
+                <div class="form-group" style="flex: 1;"><label>رقم الجوال</label><input type="tel" id="feedback-phone"></div>
+            </div>
+            <div class="form-group">
+                <label>نوع الرسالة</label>
+                <select id="feedback-type"><option value="اقتراح">اقتراح</option><option value="شكوى">شكوى</option></select>
+            </div>
+            <div class="form-group"><label>تفاصيل الرسالة</label><textarea id="feedback-desc" rows="4"></textarea></div>
+            <button class="btn btn-primary" style="width: 100%;" onclick="submitFeedback()">إرسال الرسالة</button>
+        </section>
+    </div>
+
+    <!-- 2. التسجيل -->
+    <div id="page-register" class="page-view">
+        <div class="auth-container">
+            <h2>تسجيل المشترك الجديد</h2>
+            <div class="form-group"><label>الاسم الكامل</label><input type="text" id="reg-name"></div>
+            <div class="form-group"><label>رقم الجوال</label><input type="tel" id="reg-phone"></div>
+            <button class="btn btn-primary" style="width: 100%;" onclick="proceedToPayment()">المتابعة للدفع</button>
+        </div>
+    </div>
+
+    <!-- 3. تسجيل الدخول -->
+    <div id="page-login" class="page-view">
+        <div class="auth-container">
+            <h2>تسجيل الدخول للمشتركين</h2>
+            <div class="form-group"><label>رقم الجوال المسجل</label><input type="tel" id="login-phone"></div>
+            <button class="btn btn-primary" style="width: 100%;" onclick="loginUser()">دخول</button>
+        </div>
+    </div>
+
+    <!-- 4. الدفع -->
+    <div id="page-payment" class="page-view">
+        <div class="auth-container">
+            <h2>إتمام الدفع (500 ر.س / 12 شهر)</h2>
+            <div class="form-group"><label>رقم البطاقة</label><input type="text" placeholder="XXXX XXXX XXXX XXXX"></div>
+            <button class="btn btn-primary" style="width: 100%;" onclick="showOTP()">ادفع الآن</button>
+        </div>
+    </div>
+
+    <!-- 4.1 إكمال بيانات التفعيل -->
+    <div id="page-complete-reg" class="page-view">
+        <div class="auth-container">
+            <h2>إكمال تفعيل الاشتراك 🏡</h2>
+            <div class="form-group"><label>الاسم الكامل</label><input type="text" id="comp-name" readonly style="background: #eff6ff;"></div>
+            <div class="form-group"><label>رقم الجوال</label><input type="tel" id="comp-phone" readonly style="background: #eff6ff;"></div>
+            <div class="form-group">
+                <button type="button" class="btn btn-secondary" style="width: 100%; margin-bottom:10px;" onclick="locateUser()">📍 حدد موقعي الحالي تلقائياً</button>
+                <div id="map" style="width: 100%; height: 220px; border-radius: 8px; border: 1px solid var(--border);"></div>
+            </div>
+            <div class="form-group"><label>العنوان الوطني السعودي</label><input type="text" id="comp-national-address"></div>
+            <div class="form-group">
+                <label>صورة المنزل</label>
+                <input type="file" id="comp-house-image" accept="image/*" onchange="previewImage(this, 'house-preview')">
+                <img id="house-preview" class="preview-img">
+            </div>
+            <button class="btn btn-primary" style="width: 100%;" id="btn-save-complete-reg" onclick="saveCompleteRegistration()">حفظ وتفعيل الاشتراك</button>
+        </div>
+    </div>
+
+    <!-- 5. لوحة العميل -->
+    <div id="page-client" class="page-view">
+        <div class="dashboard-container">
+            <div class="card" style="background: linear-gradient(135deg, var(--primary), #3b82f6); color: white; border: none;">
+                <h2 id="welcome-msg">أهلاً بك!</h2>
+                <div class="stats-grid">
+                    <div class="stat-box"><div class="stat-title">الباقة الحالية</div><div class="stat-val" id="client-package-badge">مُفعلة ✅</div></div>
+                    <div class="stat-box"><div class="stat-title">تاريخ الانتهاء</div><div class="stat-val" id="sub-end-date">-</div></div>
+                    <div class="stat-box"><div class="stat-title">طلباتك السابقة</div><div class="stat-val"><span id="sub-req-count">0</span> طلب منفذ</div></div>
+                </div>
+            </div>
+
+            <div class="card" id="client-sub-details" style="display:none;">
+                <div class="card-header">بيانات اشتراكك المفعلة 🏡</div>
+                <p style="margin-bottom: 5px;"><strong>الاسم المشترك:</strong> <span id="client-detail-name">-</span></p>
+                <p style="margin-bottom: 5px;"><strong>رقم الجوال:</strong> <span id="client-detail-phone">-</span></p>
+                <p style="margin-bottom: 5px;"><strong>العنوان الوطني السعودي:</strong> <span id="client-detail-address">-</span></p>
+            </div>
+
+            <div class="card">
+                <div class="card-header">طلب صيانة جديد 🛠️ <span id="sync-status" style="font-size:12px; color:var(--success); display:none;">● متصل</span></div>
+                <div class="form-group"><label>الخدمة المطلوبة:</label><select id="c-service"></select></div>
+                <div class="form-group"><label>وصف المشكلة:</label><textarea id="c-desc" rows="3" placeholder="اشرح العطل هنا..."></textarea></div>
                 <div class="form-group">
-                    <label>نوع المنتج</label>
-                    <select id="a-prod-type" onchange="togglePackageField(this.value)">
-                        <option value="package">باقة اشتراك رئيسية معروضة للزوار</option>
-                        <option value="service">خدمة صيانة فرعية داخلية للمشتركين</option>
-                    </select>
+                    <label>صورة العطل (اختياري):</label>
+                    <input type="file" id="c-image" accept="image/*" onchange="previewImage(this, 'request-preview')">
+                    <img id="request-preview" class="preview-img">
                 </div>
-                <div class="form-group" id="package-link-group" style="display:none;">
-                    <label>تابعة لأي باقة؟ (اكتب اسم الباقة بدقة ليراها المشترك فيها فقط)</label>
-                    <input type="text" id="a-prod-package-name" value="باقة السباكة والكهرباء" placeholder="مثال: باقة السباكة والكهرباء">
-                </div>
+                <button class="btn btn-secondary" id="btn-submit" onclick="submitRequest()">إرسال الطلب</button>
             </div>
-            <button class="btn" id="btn-add-prod" onclick="addProduct()">حفظ ونشر في المنظومة</button>
-        </div>
 
-        <!-- التحكم وإسناد الطلبات -->
-        <div class="card">
-            <div class="card-header">طلبات الصيانة النشطة والتحكم بالإسناد للفنيين 🔄</div>
-            <table>
-                <thead>
-                    <tr>
-                        <th>العميل</th>
-                        <th>الجوال</th>
-                        <th>الخدمة المطلوبة</th>
-                        <th>وصف العطل</th>
-                        <th>إسناد يدوي لفني</th>
-                        <th>الحالة الحاليّة</th>
-                    </tr>
-                </thead>
-                <tbody id="admin-active-list"></tbody>
-            </table>
-        </div>
-
-        <!-- سجل العملاء والتحكم في نوع الباقة الممنوحة لهم -->
-        <div class="card">
-            <div class="card-header">سجل العملاء والمشتركين النشطين والتحكم في باقاتهم 👥</div>
-            <table>
-                <thead>
-                    <tr><th>تاريخ التسجيل</th><th>اسم العميل</th><th>رقم الجوال</th><th>العنوان الوطني</th><th>الباقة الحالية المفعلة</th><th>الإجراء</th></tr>
-                </thead>
-                <tbody id="admin-users-list"></tbody>
-            </table>
-        </div>
-
-        <!-- سجل الفنيين المعتمدين -->
-        <div class="card">
-            <div class="card-header">قائمة فنيي المنصة المعتمدين وتفاصيلهم 🏅</div>
-            <table>
-                <thead>
-                    <tr><th>اسم الفني</th><th>رقم الجوال</th><th>الرقم السري للتحقق</th></tr>
-                </thead>
-                <tbody id="admin-techs-list"></tbody>
-            </table>
-        </div>
-
-        <!-- صندوق الشكاوى -->
-        <div class="card">
-            <div class="card-header">صندوق الشكاوى والاقتراحات المستلمة 📬</div>
-            <table>
-                <thead>
-                    <tr><th>التاريخ</th><th>الاسم</th><th>رقم الجوال</th><th>النوع</th><th>تفاصيل الرسالة</th></tr>
-                </thead>
-                <tbody id="admin-feedbacks-list"></tbody>
-            </table>
+            <div class="card">
+                <div class="card-header">سجل طلباتي</div>
+                <table>
+                    <thead><tr><th>التاريخ</th><th>الخدمة</th><th>الوصف</th><th>الصورة</th><th>الفني</th><th>الحالة</th></tr></thead>
+                    <tbody id="client-list"></tbody>
+                </table>
+            </div>
         </div>
     </div>
 
@@ -140,142 +195,265 @@
         const SUPABASE_ANON_KEY = "sb_publishable__poVHB0UNhHJfqxUiXHB4g_EiVA_bD3"; 
         const headers = { "apikey": SUPABASE_ANON_KEY, "Authorization": `Bearer ${SUPABASE_ANON_KEY}`, "Content-Type": "application/json" };
 
-        let adminName = localStorage.getItem('admin_approved_name') || '';
+        let db = { user: localStorage.getItem('user')||'', phone: localStorage.getItem('phone')||'', regDate: localStorage.getItem('regDate')||'', products: [], requests: [], users: [] };
+        let tempHouseImageBase64 = "", tempRequestImageBase64 = "";
 
-        if(adminName) startAdminDashboard();
+        setInterval(silentBackgroundSync, 4000);
 
-        function togglePackageField(val) {
-            document.getElementById('package-link-group').style.display = (val === 'service') ? 'block' : 'none';
-        }
-
-        async function adminLoginVerification() {
-            let phone = document.getElementById('admin-login-phone').value.trim();
-            let pass = document.getElementById('admin-login-pass').value.trim();
-            if(!phone || !pass) return alert("الرجاء تعبئة بيانات الدخول للإدارة");
-
+        async function silentBackgroundSync() {
+            let syncIndicator = document.getElementById('sync-status');
+            if(syncIndicator) syncIndicator.style.display = 'inline';
             try {
-                let res = await fetch(`${SUPABASE_URL}/rest/v1/admins?phone=eq.${phone}&password=eq.${pass}`, { headers }).then(r=>r.json());
-                if(res && res.length > 0) {
-                    adminName = res[0].name;
-                    localStorage.setItem('admin_approved_name', adminName);
-                    startAdminDashboard();
-                } else {
-                    alert("⚠️ خطأ في رقم جوال الإدارة أو الرقم السري!");
-                }
-            } catch(e) { alert("فشل الاتصال بقاعدة البيانات."); }
-        }
-
-        function adminLogout() {
-            localStorage.removeItem('admin_approved_name');
-            location.reload();
-        }
-
-        function startAdminDashboard() {
-            document.getElementById('admin-auth-card').style.display = 'none';
-            document.getElementById('admin-dashboard').style.display = 'block';
-            document.getElementById('btn-logout').style.display = 'inline-block';
-            document.getElementById('admin-name-display').innerText = "المسؤول: " + adminName;
-            syncAdminData(); setInterval(syncAdminData, 5000);
-        }
-
-        async function syncAdminData() {
-            try {
-                const [reqs, usrs, feds, techs] = await Promise.all([
-                    fetch(`${SUPABASE_URL}/rest/v1/requests?order=id.desc`, { headers }).then(r=>r.json()),
-                    fetch(`${SUPABASE_URL}/rest/v1/users?order=id.desc`, { headers }).then(r=>r.json()),
-                    fetch(`${SUPABASE_URL}/rest/v1/complaints?order=id.desc`, { headers }).then(r=>r.json()),
-                    fetch(`${SUPABASE_URL}/rest/v1/technicians?order=id.asc`, { headers }).then(r=>r.json())
+                const [prods, reqs, usrs] = await Promise.all([
+                    fetch(`${SUPABASE_URL}/rest/v1/products`, { headers }).then(r=>r.json()),
+                    fetch(`${SUPABASE_URL}/rest/v1/requests`, { headers }).then(r=>r.json()),
+                    fetch(`${SUPABASE_URL}/rest/v1/users`, { headers }).then(r=>r.json())
                 ]);
-
-                let techHtml = '';
-                techs.forEach(t => {
-                    techHtml += `<tr><td>${t.name}</td><td>${t.phone}</td><td><code>${t.password}</code></td></tr>`;
-                });
-                document.getElementById('admin-techs-list').innerHTML = techHtml;
-
-                let activeHtml = '';
-                reqs.forEach(r => {
-                    let selectOptions = `<option value="">-- اختر فني للإسناد --</option>`;
-                    techs.forEach(t => {
-                        let selected = r.tech === t.name ? 'selected' : '';
-                        selectOptions += `<option value="${t.name}" ${selected}>${t.name}</option>`;
-                    });
-
-                    activeHtml += `<tr>
-                        <td>${r.user}</td><td>${r.phone}</td><td>${r.service}</td><td>${r.desc}</td>
-                        <td><select onchange="assignTechToRequest(${r.id}, this.value)" style="padding:5px; border-radius:6px; margin:0; width:100%;">${selectOptions}</select></td>
-                        <td><span class="badge" style="background:#fef3c7; color:#d97706;">${r.status}</span></td>
-                    </tr>`;
-                });
-                document.getElementById('admin-active-list').innerHTML = activeHtml;
-
-                let userHtml = '', feedHtml = '';
-                usrs.forEach(u => {
-                    userHtml += `<tr>
-                        <td>${new Date(u.date).toLocaleDateString('ar-SA')}</td>
-                        <td>${u.name}</td>
-                        <td>${u.phone}</td>
-                        <td>${u.national_address || 'غير محدد'}</td>
-                        <td><input type="text" value="${u.package_name || 'باقة السباكة والكهرباء'}" onchange="updateUserPackage(${u.id}, this.value)" style="padding:6px; margin:0; font-size:13px;"></td>
-                        <td><small style="color:var(--secondary)">تتغير تلقائياً عند التعديل</small></td>
-                    </tr>`;
-                });
-                feds.forEach(f => {
-                    feedHtml += `<tr><td>${f.date ? new Date(f.date).toLocaleDateString('ar-SA') : '-'}</td><td>${f.name}</td><td>${f.phone}</td><td>${f.type}</td><td>${f.desc}</td></tr>`;
-                });
-
-                document.getElementById('admin-users-list').innerHTML = userHtml;
-                document.getElementById('admin-feedbacks-list').innerHTML = feedHtml;
+                db.products = prods; db.requests = reqs; db.users = usrs;
+                updateUI();
+                if(syncIndicator) setTimeout(() => syncIndicator.style.display = 'none', 800);
             } catch(e) { console.error(e); }
         }
 
-        async function updateUserPackage(id, newPackage) {
-            await fetch(`${SUPABASE_URL}/rest/v1/users?id=eq.${id}`, {
-                method: "PATCH", headers, body: JSON.stringify({ package_name: newPackage })
+        window.onload = () => { silentBackgroundSync(); if(db.user) navigate('client'); else navigate('home'); };
+
+        function navigate(page) {
+            document.querySelectorAll('.page-view').forEach(p => p.classList.remove('active'));
+            document.getElementById('page-' + page).classList.add('active');
+            let nav = document.getElementById('nav-links-container');
+            if(page === 'client') nav.innerHTML = `<button class="btn btn-outline" style="color:red; border-color:red;" onclick="logout()">تسجيل خروج</button>`;
+            else nav.innerHTML = `<button class="btn btn-outline" onclick="navigate('login')">تسجيل الدخول</button>`;
+            if(page === 'complete-reg') initMap();
+            updateUI();
+        }
+
+        let map = null, marker = null;
+        function initMap() {
+            if(map) return;
+            map = L.map('map', { attributionControl: false }).setView([24.7136, 46.6753], 12);
+            L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', { maxZoom: 19 }).addTo(map);
+            marker = L.marker([24.7136, 46.6753], { draggable: true }).addTo(map);
+            map.on('click', (e) => { marker.setLatLng(e.latlng); reverseGeocode(e.latlng.lat, e.latlng.lng); });
+        }
+
+        function locateUser() {
+            if (navigator.geolocation) {
+                navigator.geolocation.getCurrentPosition((pos) => {
+                    let lat = pos.coords.latitude, lng = pos.coords.longitude;
+                    map.setView([lat, lng], 16); marker.setLatLng([lat, lng]);
+                    reverseGeocode(lat, lng);
+                });
+            }
+        }
+
+        function reverseGeocode(lat, lng) {
+            fetch(`https://nominatim.openstreetmap.org/reverse?format=jsonv2&lat=${lat}&lon=${lng}&accept-language=ar`)
+            .then(res => res.json()).then(data => {
+                if(data.address) {
+                    let addr = data.address;
+                    document.getElementById('comp-national-address').value = [addr.house_number, addr.road, addr.city].filter(Boolean).join(' - ');
+                }
             });
         }
 
-        async function addTechnician() {
-            let name = document.getElementById('tech-name').value.trim();
-            let phone = document.getElementById('tech-phone').value.trim();
-            let password = document.getElementById('tech-pass').value.trim();
-            if(!name || !phone || !password) return alert("الرجاء تعبئة كافة حقول الفني");
-
-            let res = await fetch(`${SUPABASE_URL}/rest/v1/technicians`, {
-                method: "POST", headers, body: JSON.stringify({ name, phone, password })
-            });
-            if(res.ok) {
-                alert("✅ تم إضافة الفني بنجاح!");
-                document.getElementById('tech-name').value = ''; document.getElementById('tech-phone').value = ''; document.getElementById('tech-pass').value = '';
-                syncAdminData();
-            } else { alert("خطأ في الإدخال أو رقم جوال مكرر."); }
+        function previewImage(input, previewId) {
+            let file = input.files[0];
+            if(file) {
+                let reader = new FileReader();
+                reader.onload = (e) => {
+                    let img = new Image();
+                    img.onload = () => {
+                        let canvas = document.createElement('canvas');
+                        canvas.width = 300; canvas.height = 300;
+                        canvas.getContext('2d').drawImage(img, 0, 0, 300, 300);
+                        let base64 = canvas.toDataURL('image/jpeg', 0.4);
+                        document.getElementById(previewId).src = base64;
+                        document.getElementById(previewId).style.display = 'block';
+                        if(previewId === 'house-preview') tempHouseImageBase64 = base64;
+                        else tempRequestImageBase64 = base64;
+                    }
+                    img.src = e.target.result;
+                };
+                reader.readAsDataURL(file);
+            }
         }
 
-        async function addProduct() {
-            let name = document.getElementById('a-prod-name').value.trim();
-            let price = document.getElementById('a-prod-price').value.trim();
-            let type = document.getElementById('a-prod-type').value;
-            let belongs_to = document.getElementById('a-prod-package-name').value.trim();
+        let tempUser="", tempPhone="";
+        function proceedToPayment() { tempUser=document.getElementById('reg-name').value; tempPhone=document.getElementById('reg-phone').value; navigate('payment'); }
+        function showOTP() { document.getElementById('otp-modal').style.display='flex'; }
+        function verifyPaymentAndRegister() { document.getElementById('otp-modal').style.display='none'; document.getElementById('comp-name').value=tempUser; document.getElementById('comp-phone').value=tempPhone; navigate('complete-reg'); }
 
-            if(!name || !price) return alert("الرجاء إدخال البيانات كاملة");
-
-            await fetch(`${SUPABASE_URL}/rest/v1/products`, { 
-                method: "POST", 
-                headers, 
-                body: JSON.stringify({ name, price, type, belongs_to_package: belongs_to }) 
-            });
-            alert("✅ تم نشر الباقة/الخدمة بنجاح وعزل التبعية!");
-            document.getElementById('a-prod-name').value = ''; document.getElementById('a-prod-price').value = '';
-            syncAdminData();
+        async function saveCompleteRegistration() {
+            let addr = document.getElementById('comp-national-address').value.trim();
+            
+            if (!addr) {
+                alert("⚠️ يرجى إدخال العنوان الوطني السعودي أولاً لتفعيل الاشتراك!");
+                return;
+            }
+            if (!tempHouseImageBase64) {
+                alert("⚠️ يرجى إرفاق صورة المنزل أولاً لتفعيل الاشتراك!");
+                return;
+            }
+            
+            let payload = { name: tempUser, phone: tempPhone, national_address: addr, house_image: tempHouseImageBase64, package_name: 'باقة السباكة والكهرباء', status: 'فعال', lat: marker.getLatLng().lat.toString(), lng: marker.getLatLng().lng.toString() };
+            await fetch(`${SUPABASE_URL}/rest/v1/users`, { method: "POST", headers, body: JSON.stringify(payload) });
+            db.user = tempUser; db.phone = tempPhone; db.regDate = new Date().toISOString();
+            localStorage.setItem('user', db.user); localStorage.setItem('phone', db.phone); localStorage.setItem('regDate', db.regDate);
+            alert("✅ تم تفعيل باقة الاشتراك!"); navigate('client');
         }
 
-        async function assignTechToRequest(id, techName) {
-            let payload = { tech: techName };
-            if(techName) payload.status = 'جاري العمل';
-            await fetch(`${SUPABASE_URL}/rest/v1/requests?id=eq.${id}`, { method: "PATCH", headers, body: JSON.stringify(payload) });
-            alert("⚙️ تم تحديث إسناد المهمة وتوجيهها للفني.");
-            syncAdminData();
+        function loginUser() {
+            let p = document.getElementById('login-phone').value.trim();
+            let u = db.users.find(x => x.phone == p);
+            if(u) { 
+                db.user=u.name; 
+                db.phone=u.phone; 
+                db.regDate=u.created_at || ''; 
+                localStorage.setItem('user',u.name); 
+                localStorage.setItem('phone',u.phone);
+                localStorage.setItem('regDate', db.regDate);
+                navigate('client'); 
+            }
+            else alert("الجوال غير مسجل");
         }
+
+        async function submitRequest() {
+            let srv = document.getElementById('c-service').value, desc = document.getElementById('c-desc').value;
+            
+            if (!srv) {
+                alert("⚠️ يرجى تحديد الخدمة المطلوبة!");
+                return;
+            }
+            if (!tempRequestImageBase64) {
+                alert("⚠️ يرجى إرفاق صورة العطل لإرسال الطلب!");
+                return;
+            }
+            
+            let payload = { date: new Date().toLocaleDateString('ar-SA'), "user": db.user, phone: db.phone, service: srv, "desc": desc, image: tempRequestImageBase64, status: 'قيد الانتظار' };
+            await fetch(`${SUPABASE_URL}/rest/v1/requests`, { method:"POST", headers, body: JSON.stringify(payload) });
+            alert("✅ تم إرسال طلب الصيانة!");
+            
+            document.getElementById('c-desc').value = '';
+            document.getElementById('c-image').value = '';
+            
+            let preview = document.getElementById('request-preview');
+            if (preview) {
+                preview.src = '';
+                preview.style.display = 'none';
+            }
+            tempRequestImageBase64 = "";
+
+            silentBackgroundSync();
+        }
+
+        async function submitFeedback() {
+            let name = document.getElementById('feedback-name').value.trim();
+            let phone = document.getElementById('feedback-phone').value.trim();
+            let type = document.getElementById('feedback-type').value;
+            let desc = document.getElementById('feedback-desc').value.trim();
+            
+            if (!name || !phone || !desc) {
+                alert("⚠️ يرجى تعبئة جميع الحقول لإرسال الرسالة!");
+                return;
+            }
+
+            let payload = { date: new Date().toISOString(), name: name, phone: phone, type: type, "desc": desc };
+
+            try {
+                let res = await fetch(`${SUPABASE_URL}/rest/v1/complaints`, { method:"POST", headers, body: JSON.stringify(payload) });
+                if(res.ok) {
+                    alert("✅ شكرًا لرسالتك! تم إرسال الشكوى/الاقتراح بنجاح وسنقوم بمراجعتها.");
+                    document.getElementById('feedback-name').value = ''; 
+                    document.getElementById('feedback-phone').value = ''; 
+                    document.getElementById('feedback-desc').value = '';
+                } else {
+                    let errText = await res.text();
+                    alert("❌ فشل إرسال الرسالة من خادم قاعدة البيانات: " + errText);
+                }
+            } catch(e) {
+                alert("❌ حدث خطأ في الاتصال بالشبكة عند إرسال الرسالة.");
+            }
+        }
+
+        function logout() { localStorage.clear(); location.reload(); }
+
+        // --- المزامنة المتقدمة وفلترة الخدمات تَبَعاً لاشتراك العميل الحالي ---
+        function updateUI() {
+            let regDateVal = db.regDate;
+            let currentUserRecord = (db.users || []).find(u => u.phone && db.phone && u.phone.toString() === db.phone.toString());
+            let currentPackage = 'باقة السباكة والكهرباء'; // الباقة الافتراضية
+
+            if (currentUserRecord) {
+                if (currentUserRecord.created_at) regDateVal = currentUserRecord.created_at;
+                if (currentUserRecord.package_name) currentPackage = currentUserRecord.package_name;
+            }
+
+            if(document.getElementById('client-package-badge')) {
+                document.getElementById('client-package-badge').innerText = currentPackage + " ✅";
+            }
+
+            if(regDateVal && document.getElementById('sub-end-date')) {
+                let end = new Date(regDateVal); end.setFullYear(end.getFullYear()+1);
+                document.getElementById('sub-end-date').innerText = end.toLocaleDateString('ar-SA');
+            }
+            
+            if(db.user && document.getElementById('welcome-msg')) document.getElementById('welcome-msg').innerText = "أهلاً بك يا " + db.user;
+            
+            let h="", s="", c="";
+            let completedCount = 0;
+
+            if (db.products && db.products.length > 0) {
+                let packagesExist = false;
+                let servicesExist = false;
+
+                db.products.forEach(p => { 
+                    // 1. عرض الباقات في الكروت الخارجية للزوار (بشرط أن يكون النوع package صراحةً وبشكل قطعي)
+                    if (p.type && p.type.toString().trim() === 'package') {
+                        h += `<div class="service-card"><h3>${p.name}</h3><div class="price">${p.price || ''}</div></div>`; 
+                        packagesExist = true;
+                    }
+                    // 2. فلترة الخدمات الداخلية: تظهر للعميل فقط إذا كانت تابعة لنفس باقته الحالية
+                    else if (p.type && p.type.toString().trim() === 'service') {
+                        let belongsTo = p.belongs_to_package || 'باقة السباكة والكهرباء';
+                        if (belongsTo.toString().trim() === currentPackage.toString().trim()) {
+                            s += `<option value="${p.name}">${p.name}</option>`; 
+                            servicesExist = true;
+                        }
+                    }
+                });
+
+                if(!packagesExist) h = `<p style="text-align:center; color:#6b7280; width:100%;">لا توجد باقات معروضة حالياً.</p>`;
+                if(!servicesExist) s = `<option value="">-- لا توجد خدمات مشمولة في باقتك الحالية --</option>`;
+            } else {
+                h = `<p style="text-align:center; color:#6b7280; width:100%;">لا توجد باقات معروضة حالياً.</p>`;
+                s = `<option value="">-- لا توجد خدمات صيانة فرعية حالياً --</option>`;
+            }
+
+            if (db.requests && db.requests.length > 0) {
+                db.requests.forEach(r => { 
+                    if(r.phone == db.phone) {
+                        if(r.status === 'مكتمل') completedCount++;
+                        let badge = r.status === 'مكتمل' ? 'badge-success' : (r.status === 'جاري العمل' ? 'badge-working' : 'badge-pending');
+                        let imgHtml = r.image ? `<img src="${r.image}" style="width: 45px; height: 45px; border-radius: 4px; object-fit: cover; cursor: pointer;" onclick="openImageModal('${r.image}')">` : 'لا توجد';
+                        c += `<tr><td>${r.date}</td><td>${r.service}</td><td>${r.desc}</td><td>${imgHtml}</td><td>${r.tech||'بحث'}</td><td><span class="badge ${badge}">${r.status}</span></td></tr>`; 
+                    }
+                });
+            }
+            
+            if(document.getElementById('sub-req-count')) document.getElementById('sub-req-count').innerText = completedCount;
+            if(document.getElementById('home-products-grid')) document.getElementById('home-products-grid').innerHTML = h;
+            if(document.getElementById('c-service')) document.getElementById('c-service').innerHTML = s;
+            if(document.getElementById('client-list')) document.getElementById('client-list').innerHTML = c;
+
+            if(currentUserRecord && document.getElementById('client-sub-details')) {
+                document.getElementById('client-sub-details').style.display = 'block';
+                document.getElementById('client-detail-name').innerText = currentUserRecord.name;
+                document.getElementById('client-detail-phone').innerText = currentUserRecord.phone;
+                document.getElementById('client-detail-address').innerText = currentUserRecord.national_address || 'غير محدد';
+            }
+        }
+        function openImageModal(src) { document.getElementById('modal-viewer-img').src = src; document.getElementById('image-modal').style.display = 'flex'; }
+        function closeImageModal() { document.getElementById('image-modal').style.display = 'none'; }
     </script>
 </body>
 </html>
