@@ -16,7 +16,7 @@
         .btn-success { background: var(--secondary); }
         .form-group { margin-bottom: 20px; text-align: right; flex: 1; min-width: 200px;}
         input, select { width: 100%; padding: 14px; border: 1px solid var(--border); border-radius: 8px; font-size: 15px; outline: none; margin-top: 5px;}
-        table { width: 100%; border-collapse: collapse; margin-top: 10px; font-size: 14px; min-width: 1100px;}
+        table { width: 100%; border-collapse: collapse; margin-top: 10px; font-size: 14px; min-width: 1250px;}
         th, td { padding: 15px 10px; text-align: right; border-bottom: 1px solid var(--border); vertical-align: middle;}
         th { background: var(--bg); color: #6b7280; }
         .badge { padding: 6px 12px; border-radius: 20px; font-size: 12px; font-weight: bold; background: #d1fae5; color: #10b981; }
@@ -50,7 +50,7 @@
     <!-- لوحة التحكم الإدارية المركزية -->
     <div id="admin-dashboard" style="display: none;">
         
-        <!-- مراقبة مؤشرات الأوقات والتحركات الميدانية -->
+        <!-- مراقبة مؤشرات الأوقات والتحركات الميدانية المحدثة بفصل الأوقات -->
         <div class="card">
             <div class="card-header">جدول مراقبة تحركات الفنيين الميدانية ومؤشرات الأداء والأوقات 🔄</div>
             <table>
@@ -60,9 +60,10 @@
                         <th>الخدمة</th>
                         <th>الفني المسند</th>
                         <th>الحالة</th>
-                        <th>وقت الإسناد (التحرك)</th>
-                        <th>وقت الوصول</th>
-                        <th>وقت الإقفال</th>
+                        <th>وقت الإسناد 🖥️</th>
+                        <th>وقت التحرك 🚖</th>
+                        <th>وقت الوصول 📍</th>
+                        <th>وقت الإقفال 🏁</th>
                         <th>التقرير الميداني المصور</th>
                     </tr>
                 </thead>
@@ -221,6 +222,7 @@
                             <select onchange="assignTechToRequest(${r.id}, this.value)" style="padding:5px; border-radius:6px; margin:0; font-size:13px;">${selectOptions}</select>
                         </td>
                         <td><span class="badge" style="background:#f1f5f9; color:#0f172a;">${r.status}</span></td>
+                        <td>${formatMidianTime(r.assigned_at)}</td>
                         <td>${formatMidianTime(r.accepted_at)}</td>
                         <td>${formatMidianTime(r.arrived_at)}</td>
                         <td>${formatMidianTime(r.completed_at)}</td>
@@ -231,7 +233,7 @@
 
                 let userHtml = '', feedHtml = '';
                 usrs.forEach(u => {
-                    userHtml += `<tr><td>${new Date(u.date).toLocaleDateString('ar-SA')}</td><td>${u.name}</td><td>${u.phone}</td><td>${u.national_address || 'غير محدد'}</td><td><input type="text" value="${u.package_name || 'باقة السباكة والكهرباء'}" onchange="updateUserPackage(${u.id}, this.value)" style="padding:6px; margin:0; font-size:13px;"></td></tr>`;
+                    userHtml += `<tr><td>${new Date(u.date).toLocaleDateString('ar-SA')}</td><td>${u.name}</td><td>${u.phone}</td><td>${u.national_address || 'غير مححدد'}</td><td><input type="text" value="${u.package_name || 'باقة السباكة والكهرباء'}" onchange="updateUserPackage(${u.id}, this.value)" style="padding:6px; margin:0; font-size:13px;"></td></tr>`;
                 });
                 feds.forEach(f => {
                     feedHtml += `<tr><td>${f.date ? new Date(f.date).toLocaleDateString('ar-SA') : '-'}</td><td>${f.name}</td><td>${f.phone}</td><td>${f.type}</td><td>${f.desc}</td></tr>`;
@@ -267,15 +269,16 @@
             alert("✅ تم الحفظ والنشر!"); syncAdminData();
         }
 
-        // 🛠️ [الدالة المحدثة لتسجيل وقت الإسناد فوراً بدقة]
+        // 🖥️ [تحديث دالة الإسناد]: تسجل فقط وقت تكليف الإدارة للطلب في حقل assigned_at
         async function assignTechToRequest(id, techName) {
             let payload = { tech: techName };
             
             if(techName) {
                 payload.status = 'جاري العمل';
-                payload.accepted_at = new Date().toISOString(); // تسجيل تاريخ ووقت الإسناد والتحرك اللحظي
+                payload.assigned_at = new Date().toISOString(); // توثيق تاريخ تكليف الإدارة للفني بدقة
             } else {
                 payload.status = 'قيد الانتظار';
+                payload.assigned_at = null;
                 payload.accepted_at = null;
             }
 
@@ -286,10 +289,10 @@
             });
 
             if(res.ok) {
-                alert("⚙️ تم إسناد الطلب للفني وتسجيل وقت بدء المهمة بنجاح.");
+                alert("⚙️ تم تكليف وإسناد الطلب للفني وتسجيل وقت الإدارة المركزي.");
                 syncAdminData();
             } else {
-                alert("❌ فشل تحديث إسناد الفني، يرجى التحقق من الاتصال.");
+                alert("❌ فشل تحديث إسناد الفني.");
             }
         }
 
