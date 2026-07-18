@@ -6,63 +6,124 @@
     <title>لوحة الإدارة الشاملة | صيانة+</title>
     <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700;800&display=swap" rel="stylesheet">
     <style>
-        :root { --primary: #111827; --secondary: #10b981; --bg: #f3f4f6; --white: #ffffff; --text-main: #1f2937; --border: #e5e7eb; }
+        :root { --primary: #1e3a8a; --secondary: #10b981; --bg: #f3f4f6; --white: #ffffff; --text-main: #1f2937; --border: #e5e7eb; }
         * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Tajawal', sans-serif; }
         body { background-color: var(--bg); color: var(--text-main); padding: 30px 5%; }
         .card { background: var(--white); padding: 25px; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.03); margin-bottom: 25px; border: 1px solid var(--border); overflow-x: auto;}
-        .card-header { font-size: 20px; font-weight: 800; color: #1e3a8a; margin-bottom: 20px; border-bottom: 2px solid var(--bg); padding-bottom: 10px;}
-        .btn { padding: 10px 24px; border: none; border-radius: 8px; cursor: pointer; font-weight: 700; background: #1e3a8a; color: white; }
-        .form-group { margin-bottom: 20px; text-align: right; flex: 1;}
-        input { width: 100%; padding: 14px; border: 1px solid var(--border); border-radius: 8px; }
+        .card-header { font-size: 20px; font-weight: 800; color: var(--primary); margin-bottom: 20px; border-bottom: 2px solid var(--bg); padding-bottom: 10px; display: flex; justify-content: space-between; align-items: center;}
+        .btn { padding: 10px 24px; border: none; border-radius: 8px; cursor: pointer; font-weight: 700; background: var(--primary); color: white; transition: 0.3s; }
+        .btn:hover { opacity: 0.9; }
+        .btn-success { background: var(--secondary); }
+        .form-group { margin-bottom: 20px; text-align: right; flex: 1; min-width: 200px;}
+        input, select { width: 100%; padding: 14px; border: 1px solid var(--border); border-radius: 8px; font-size: 15px; outline: none; margin-top: 5px;}
         table { width: 100%; border-collapse: collapse; margin-top: 10px; font-size: 14px; min-width: 800px;}
         th, td { padding: 15px 10px; text-align: right; border-bottom: 1px solid var(--border); }
         th { background: var(--bg); color: #6b7280; }
         .badge { padding: 6px 12px; border-radius: 20px; font-size: 12px; font-weight: bold; background: #d1fae5; color: #10b981; }
+        nav { background-color: var(--white); padding: 15px 5%; display: flex; justify-content: space-between; align-items: center; box-shadow: 0 4px 6px rgba(0,0,0,0.05); margin:-30px -5.3% 30px -5.3%; }
     </style>
 </head>
 <body>
 
-    <div class="card" style="background: linear-gradient(135deg, #1f2937, #111827); color: white; border: none;">
-        <h2>لوحة الإدارة الشاملة والمراقبة المركزية للنظام 📊</h2>
-    </div>
-
-    <div class="card">
-        <div class="card-header">إضافة خدمات وباقات للرئيسية ➕</div>
-        <div style="display: flex; gap: 15px; flex-wrap: wrap;">
-            <div class="form-group"><label>اسم الخدمة</label><input type="text" id="a-prod-name" placeholder="مثال: صيانة التكييف المركزي"></div>
-            <div class="form-group"><label>السعر المعروض</label><input type="text" id="a-prod-price" placeholder="مثال: مجاناً للمشتركين"></div>
+    <nav>
+        <div style="font-size: 24px; font-weight: 800; color: var(--primary);">صيانة<span>+</span> (النظام الإداري)</div>
+        <div>
+            <span id="admin-name-display" style="font-weight: bold; margin-left: 15px; color: var(--primary);"></span>
+            <button class="btn" style="background: red;" id="btn-logout" onclick="adminLogout()" style="display: none;">تسجيل خروج الإدارة</button>
         </div>
-        <button class="btn" id="btn-add-prod" onclick="addProduct()">إضافة ونشر للرئيسية</button>
+    </nav>
+
+    <!-- واجهة تسجيل دخول الإدارة المؤمنة -->
+    <div id="admin-auth-card" class="card" style="max-width: 450px; margin: 60px auto; display: block;">
+        <h2 style="text-align: center; margin-bottom: 20px; color: var(--primary);">تسجيل دخول الإدارة 🔒</h2>
+        <div style="margin-bottom: 15px;">
+            <label style="font-weight:bold;">رقم جوال المسؤول</label>
+            <input type="tel" id="admin-login-phone" placeholder="05XXXXXXXX">
+        </div>
+        <div style="margin-bottom: 20px;">
+            <label style="font-weight:bold;">الرقم السري للإدارة</label>
+            <input type="password" id="admin-login-pass" placeholder="******">
+        </div>
+        <button class="btn btn-primary" style="width: 100%;" onclick="adminLoginVerification()">دخول لوحة التحكم المركزية</button>
     </div>
 
-    <div class="card">
-        <div class="card-header">طلبات الصيانة النشطة والانتظار 🔄</div>
-        <table>
-            <thead>
-                <tr><th>العميل</th><th>الجوال</th><th>الخدمة</th><th>الوصف</th><th>الفني الحالي</th><th>الحالة</th></tr>
-            </thead>
-            <tbody id="admin-active-list"></tbody>
-        </table>
-    </div>
+    <!-- لوحة الإدارة الشاملة (مخفية وتظهر فقط بعد الدخول الصحيح) -->
+    <div id="admin-dashboard" style="display: none;">
+        <div class="card" style="background: linear-gradient(135deg, #1f2937, #111827); color: white; border: none;">
+            <h2>مرحباً بك في لوحة المراقبة وإسناد المهام للفنيين والتحكم بالباقات 📊</h2>
+        </div>
 
-    <div class="card">
-        <div class="card-header">سجل المشتركين الفاعلين 👥</div>
-        <table>
-            <thead>
-                <tr><th>تاريخ التسجيل</th><th>اسم العميل</th><th>رقم الجوال</th><th>العنوان الوطني</th><th>حالة الاشتراك</th></tr>
-            </thead>
-            <tbody id="admin-users-list"></tbody>
-        </table>
-    </div>
+        <!-- قسم إضافة الفنيين -->
+        <div class="card">
+            <div class="card-header">إضافة فني جديد إلى المنظومة 👨‍🔧</div>
+            <div style="display: flex; gap: 15px; flex-wrap: wrap;">
+                <div class="form-group"><label>اسم الفني الكامل</label><input type="text" id="tech-name" placeholder="اسم الفني"></div>
+                <div class="form-group"><label>رقم جوال الفني</label><input type="tel" id="tech-phone" placeholder="05XXXXXXXX"></div>
+                <div class="form-group"><label>الرقم السري للدخول</label><input type="password" id="tech-pass" placeholder="******"></div>
+            </div>
+            <button class="btn btn-success" id="btn-add-tech" onclick="addTechnician()">إنشاء حساب الفني وتفعيله</button>
+        </div>
 
-    <div class="card">
-        <div class="card-header">صندوق الشكاوى والاقتراحات المستلمة الباطنية 📬</div>
-        <table>
-            <thead>
-                <tr><th>التاريخ</th><th>الاسم</th><th>رقم الجوال</th><th>النوع</th><th>تفاصيل الرسالة</th></tr>
-            </thead>
-            <tbody id="admin-feedbacks-list"></tbody>
-        </table>
+        <!-- قسم الخدمات والمنتجات -->
+        <div class="card">
+            <div class="card-header">إضافة وتحديث الخدمات والباقات في الرئيسية ➕</div>
+            <div style="display: flex; gap: 15px; flex-wrap: wrap;">
+                <div class="form-group"><label>اسم الخدمة / الباقة</label><input type="text" id="a-prod-name" placeholder="مثال: صيانة التكييف"></div>
+                <div class="form-group"><label>السعر المعروض</label><input type="text" id="a-prod-price" placeholder="مثال: 500 ر.س / سنوياً"></div>
+            </div>
+            <button class="btn" id="btn-add-prod" onclick="addProduct()">نشر الخدمة على الموقع</button>
+        </div>
+
+        <!-- التحكم وإسناد الطلبات -->
+        <div class="card">
+            <div class="card-header">طلبات الصيانة النشطة والتحكم بالإسناد للفنيين 🔄</div>
+            <table>
+                <thead>
+                    <tr>
+                        <th>العميل</th>
+                        <th>الجوال</th>
+                        <th>الخدمة المطلوبة</th>
+                        <th>وصف العطل</th>
+                        <th>إسناد يدوي لفني</th>
+                        <th>الحالة الحاليّة</th>
+                    </tr>
+                </thead>
+                <tbody id="admin-active-list"></tbody>
+            </table>
+        </div>
+
+        <!-- سجل الفنيين المعتمدين -->
+        <div class="card">
+            <div class="card-header">قائمة فنيي المنصة المعتمدين وتفاصيلهم 🏅</div>
+            <table>
+                <thead>
+                    <tr><th>اسم الفني</th><th>رقم الجوال</th><th>الرقم السري للتحقق</th></tr>
+                </thead>
+                <tbody id="admin-techs-list"></tbody>
+            </table>
+        </div>
+
+        <!-- سجل العملاء -->
+        <div class="card">
+            <div class="card-header">سجل المشتركين الفاعلين (العملاء) 👥</div>
+            <table>
+                <thead>
+                    <tr><th>تاريخ التسجيل</th><th>اسم العميل</th><th>رقم الجوال</th><th>العنوان الوطني</th><th>حالة الاشتراك</th></tr>
+                </thead>
+                <tbody id="admin-users-list"></tbody>
+            </table>
+        </div>
+
+        <!-- صندوق الشكاوى -->
+        <div class="card">
+            <div class="card-header">صندوق الشكاوى والاقتراحات المستلمة 📬</div>
+            <table>
+                <thead>
+                    <tr><th>التاريخ</th><th>الاسم</th><th>رقم الجوال</th><th>النوع</th><th>تفاصيل الرسالة</th></tr>
+                </thead>
+                <tbody id="admin-feedbacks-list"></tbody>
+            </table>
+        </div>
     </div>
 
     <script>
@@ -70,19 +131,80 @@
         const SUPABASE_ANON_KEY = "sb_publishable__poVHB0UNhHJfqxUiXHB4g_EiVA_bD3"; 
         const headers = { "apikey": SUPABASE_ANON_KEY, "Authorization": `Bearer ${SUPABASE_ANON_KEY}`, "Content-Type": "application/json" };
 
+        let adminName = localStorage.getItem('admin_approved_name') || '';
+
+        if(adminName) startAdminDashboard();
+
+        async function adminLoginVerification() {
+            let phone = document.getElementById('admin-login-phone').value.trim();
+            let pass = document.getElementById('admin-login-pass').value.trim();
+            if(!phone || !pass) return alert("الرجاء تعبئة بيانات الدخول للإدارة");
+
+            try {
+                let res = await fetch(`${SUPABASE_URL}/rest/v1/admins?phone=eq.${phone}&password=eq.${pass}`, { headers }).then(r=>r.json());
+                if(res && res.length > 0) {
+                    adminName = res[0].name;
+                    localStorage.setItem('admin_approved_name', adminName);
+                    startAdminDashboard();
+                } else {
+                    alert("⚠️ خطأ في رقم جوال الإدارة أو الرقم السري!");
+                }
+            } catch(e) { alert("فشل الاتصال بقاعدة البيانات."); }
+        }
+
+        function adminLogout() {
+            localStorage.removeItem('admin_approved_name');
+            location.reload();
+        }
+
+        function startAdminDashboard() {
+            document.getElementById('admin-auth-card').style.display = 'none';
+            document.getElementById('admin-dashboard').style.display = 'block';
+            document.getElementById('btn-logout').style.display = 'inline-block';
+            document.getElementById('admin-name-display').innerText = "المسؤول: " + adminName;
+            syncAdminData(); setInterval(syncAdminData, 5000);
+        }
+
         async function syncAdminData() {
             try {
-                const [reqs, usrs, feds] = await Promise.all([
+                const [reqs, usrs, feds, techs] = await Promise.all([
                     fetch(`${SUPABASE_URL}/rest/v1/requests?order=id.desc`, { headers }).then(r=>r.json()),
                     fetch(`${SUPABASE_URL}/rest/v1/users?order=id.desc`, { headers }).then(r=>r.json()),
-                    fetch(`${SUPABASE_URL}/rest/v1/feedbacks?order=id.desc`, { headers }).then(r=>r.json())
+                    fetch(`${SUPABASE_URL}/rest/v1/feedbacks?order=id.desc`, { headers }).then(r=>r.json()),
+                    fetch(`${SUPABASE_URL}/rest/v1/technicians?order=id.asc`, { headers }).then(r=>r.json())
                 ]);
 
-                let activeHtml = '', userHtml = '', feedHtml = '';
-
-                reqs.forEach(r => {
-                    activeHtml += `<tr><td>${r.user}</td><td>${r.phone}</td><td>${r.service}</td><td>${r.desc}</td><td>${r.tech || 'في انتظار فني'}</td><td><span class="badge" style="background:#fef3c7; color:#d97706;">${r.status}</span></td></tr>`;
+                // 1. جدول الفنيين
+                let techHtml = '';
+                techs.forEach(t => {
+                    techHtml += `<tr><td>${t.name}</td><td>${t.phone}</td><td><code>${t.password}</code></td></tr>`;
                 });
+                document.getElementById('admin-techs-list').innerHTML = techHtml;
+
+                // 2. جدول الطلبات وتحديث الإسناد للفنيين
+                let activeHtml = '';
+                reqs.forEach(r => {
+                    let selectOptions = `<option value="">-- اختر فني للإسناد --</option>`;
+                    techs.forEach(t => {
+                        let selected = r.tech === t.name ? 'selected' : '';
+                        selectOptions += `<option value="${t.name}" ${selected}>${t.name}</option>`;
+                    });
+
+                    activeHtml += `<tr>
+                        <td>${r.user}</td>
+                        <td>${r.phone}</td>
+                        <td>${r.service}</td>
+                        <td>${r.desc}</td>
+                        <td>
+                            <select onchange="assignTechToRequest(${r.id}, this.value)" style="padding:5px; border-radius:6px; margin:0; width:100%;">${selectOptions}</select>
+                        </td>
+                        <td><span class="badge" style="background:#fef3c7; color:#d97706;">${r.status}</span></td>
+                    </tr>`;
+                });
+                document.getElementById('admin-active-list').innerHTML = activeHtml;
+
+                // 3. العملاء والشكاوى
+                let userHtml = '', feedHtml = '';
                 usrs.forEach(u => {
                     userHtml += `<tr><td>${new Date(u.date).toLocaleDateString('ar-SA')}</td><td>${u.name}</td><td>${u.phone}</td><td>${u.national_address || 'غير محدد'}</td><td><span class="badge">${u.status}</span></td></tr>`;
                 });
@@ -90,10 +212,25 @@
                     feedHtml += `<tr><td>${f.date}</td><td>${f.name}</td><td>${f.phone}</td><td>${f.type}</td><td>${f.desc}</td></tr>`;
                 });
 
-                document.getElementById('admin-active-list').innerHTML = activeHtml;
                 document.getElementById('admin-users-list').innerHTML = userHtml;
                 document.getElementById('admin-feedbacks-list').innerHTML = feedHtml;
             } catch(e) { console.error(e); }
+        }
+
+        async function addTechnician() {
+            let name = document.getElementById('tech-name').value.trim();
+            let phone = document.getElementById('tech-phone').value.trim();
+            let password = document.getElementById('tech-pass').value.trim();
+            if(!name || !phone || !password) return alert("الرجاء تعبئة كافة حقول الفني");
+
+            let res = await fetch(`${SUPABASE_URL}/rest/v1/technicians`, {
+                method: "POST", headers, body: JSON.stringify({ name, phone, password })
+            });
+            if(res.ok) {
+                alert("✅ تم إضافة الفني بنجاح!");
+                document.getElementById('tech-name').value = ''; document.getElementById('tech-phone').value = ''; document.getElementById('tech-pass').value = '';
+                syncAdminData();
+            } else { alert("خطأ في الإدخال أو رقم جوال مكرر."); }
         }
 
         async function addProduct() {
@@ -102,12 +239,18 @@
             if(!name || !price) return alert("الرجاء إدخال البيانات كاملة");
 
             await fetch(`${SUPABASE_URL}/rest/v1/products`, { method: "POST", headers, body: JSON.stringify({ name, price }) });
-            alert("✅ تم نشر الخدمة بنجاح!");
+            alert("✅ تم نشر الباقة الجديدة!");
             document.getElementById('a-prod-name').value = ''; document.getElementById('a-prod-price').value = '';
             syncAdminData();
         }
 
-        window.onload = () => { syncAdminData(); setInterval(syncAdminData, 5000); };
+        async function assignTechToRequest(id, techName) {
+            let payload = { tech: techName };
+            if(techName) payload.status = 'جاري العمل';
+            await fetch(`${SUPABASE_URL}/rest/v1/requests?id=eq.${id}`, { method: "PATCH", headers, body: JSON.stringify(payload) });
+            alert("⚙️ تم تحديث إسناد المهمة وتوجيهها للفني.");
+            syncAdminData();
+        }
     </script>
 </body>
 </html>
