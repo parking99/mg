@@ -14,6 +14,7 @@
         .btn { padding: 10px 24px; border: none; border-radius: 8px; cursor: pointer; font-weight: 700; background: var(--primary); color: white; transition: 0.3s; }
         .btn:hover { opacity: 0.9; }
         .btn-success { background: var(--secondary); }
+        .btn-info { background: #3b82f6; }
         .form-group { margin-bottom: 20px; text-align: right; flex: 1; min-width: 200px;}
         input, select { width: 100%; padding: 14px; border: 1px solid var(--border); border-radius: 8px; font-size: 15px; outline: none; margin-top: 5px;}
         table { width: 100%; border-collapse: collapse; margin-top: 10px; font-size: 14px; min-width: 1250px;}
@@ -22,11 +23,11 @@
         .badge { padding: 6px 12px; border-radius: 20px; font-size: 12px; font-weight: bold; background: #d1fae5; color: #10b981; }
         nav { background-color: var(--white); padding: 15px 5%; display: flex; justify-content: space-between; align-items: center; box-shadow: 0 4px 6px rgba(0,0,0,0.05); margin:-30px -5.3% 30px -5.3%; }
         
-        /* تحسينات صندوق معاينة صور التقارير */
         .report-images-container { display: flex; gap: 15px; justify-content: space-between; margin-top: 15px; flex-wrap: wrap; }
         .report-img-box { flex: 1; min-width: 130px; text-align: center; background: #f8fafc; padding: 10px; border-radius: 8px; border: 1px solid #e2e8f0; }
         .report-img-box img { max-width: 100%; height: 120px; border-radius: 6px; object-fit: cover; margin-top: 5px; cursor: pointer; border: 1px solid #cbd5e1; }
         .report-img-box span { font-size: 12px; font-weight: bold; color: var(--primary); display: block; }
+        .search-box { width: 100%; max-width: 400px; padding: 12px; border: 2px solid var(--primary); border-radius: 8px; font-size: 14px; outline: none; margin-bottom: 15px; }
     </style>
 </head>
 <body>
@@ -77,6 +78,28 @@
             </table>
         </div>
 
+        <!-- سجل العملاء والمشتركين المطور (البحث وتفاصيل الباقات والطلبات السابقة) -->
+        <div class="card">
+            <div class="card-header">سجل العملاء والمشتركين النشطين والتحكم في باقاتهم 👥</div>
+            <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px;">
+                <input type="text" id="user-search-input" class="search-box" placeholder="🔍 ابحث هنا باسم العميل أو رقم الجوال..." oninput="filterUsersTable()">
+            </div>
+            <table>
+                <thead>
+                    <tr>
+                        <th>تاريخ التسجيل</th>
+                        <th>اسم المشترك</th>
+                        <th>رقم الجوال</th>
+                        <th>العنوان الوطني</th>
+                        <th>نوع الاشتراك الحالي</th>
+                        <th>تاريخ انتهاء الباقة</th>
+                        <th>الطلبات السابقة والسجل</th>
+                    </tr>
+                </thead>
+                <tbody id="admin-users-list"></tbody>
+            </table>
+        </div>
+
         <!-- قسم إضافة الفنيين -->
         <div class="card">
             <div class="card-header">إضافة فني جديد إلى المنظومة 👨‍🔧</div>
@@ -109,17 +132,6 @@
             <button class="btn" id="btn-add-prod" onclick="addProduct()">حفظ ونشر في المنظومة</button>
         </div>
 
-        <!-- سجل العملاء والتحكم في نوع الباقة الممنوحة لهم -->
-        <div class="card">
-            <div class="card-header">سجل العملاء والمشتركين النشطين والتحكم في باقاتهم 👥</div>
-            <table>
-                <thead>
-                    <tr><th>تاريخ التسجيل</th><th>اسم العميل</th><th>رقم الجوال</th><th>العنوان الوطني</th><th>الباقة الحالية المفعلة</th></tr>
-                </thead>
-                <tbody id="admin-users-list"></tbody>
-            </table>
-        </div>
-
         <!-- سجل الفنيين المعتمدين -->
         <div class="card">
             <div class="card-header">قائمة فنيي المنصة المعتمدين وتفاصيلهم 🏅</div>
@@ -143,30 +155,33 @@
         </div>
     </div>
 
-    <!-- نافذة مكبرة متطورة لعرض التقارير الميدانية المصورة خطوة بخطوة أولاً بأول -->
+    <!-- نافذة مكبرة لعرض التقرير المصور والتتبع الجغرافي الميداني -->
     <div id="image-modal" style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.6); display: none; justify-content: center; align-items: center; z-index: 1000;" onclick="closeImageModal()">
         <div style="background: var(--white); padding: 25px; border-radius: 16px; width: 90%; max-width: 650px; text-align: right; position: relative;" onclick="event.stopPropagation()">
             <span style="position: absolute; top: 10px; right: 15px; font-size: 24px; cursor: pointer; color: var(--primary);" onclick="closeImageModal()">&times;</span>
             <h3 style="color:var(--primary); margin-bottom:10px;">الملف والتقرير الفني الميداني الشامل 📄</h3>
-            
             <p style="font-weight: bold; margin-bottom: 5px;">ملخص أعمال الفني المكتوب:</p>
             <p id="modal-report-desc" style="margin-bottom:15px; background:#f8fafc; padding:10px; border-radius:8px; border:1px solid #e2e8f0; font-size: 14px; min-height: 40px; color:#334155;"></p>
-            
             <p style="font-weight: bold; margin-bottom: 5px;">مراقبة الصور التتبعية (أولاً بأول):</p>
             <div class="report-images-container">
-                <div class="report-img-box">
-                    <span>🏡 منزل العميل المعتمد</span>
-                    <img id="report-modal-user-house" src="" alt="لا توجد صورة">
-                </div>
-                <div class="report-img-box">
-                    <span>📍 إثبات وصول الفني</span>
-                    <img id="report-modal-arrival-house" src="" alt="قيد الانتظار...">
-                </div>
-                <div class="report-img-box">
-                    <span>🏁 التقرير المصور النهائي</span>
-                    <img id="report-modal-final" src="" alt="قيد العمل...">
-                </div>
+                <div class="report-img-box"><span>🏡 منزل العميل المعتمد</span><img id="report-modal-user-house" src=""></div>
+                <div class="report-img-box"><span>📍 إثبات وصول الفني</span><img id="report-modal-arrival-house" src=""></div>
+                <div class="report-img-box"><span>🏁 التقرير المصور النهائي</span><img id="report-modal-final" src=""></div>
             </div>
+        </div>
+    </div>
+
+    <!-- نافذة منبثقة مخصصة لعرض السجل التاريخي الكامل لطلبات العميل مسبقاً -->
+    <div id="user-history-modal" style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.6); display: none; justify-content: center; align-items: center; z-index: 1000;" onclick="closeUserHistoryModal()">
+        <div style="background: var(--white); padding: 25px; border-radius: 16px; width: 90%; max-width: 800px; text-align: right; position: relative; max-height:85vh; overflow-y:auto;" onclick="event.stopPropagation()">
+            <span style="position: absolute; top: 10px; right: 15px; font-size: 24px; cursor: pointer; color: var(--primary);" onclick="closeUserHistoryModal()">&times;</span>
+            <h3 style="color:var(--primary); margin-bottom:15px;" id="history-modal-title">سجل بلاغات الصيانة للمشترك 🗒️</h3>
+            <table style="min-width:100%;">
+                <thead>
+                    <tr><th>التاريخ</th><th>الخدمة المطلوبة</th><th>وصف العطل</th><th>الفني المباشر</th><th>حالة الطلب الحالية</th></tr>
+                </thead>
+                <tbody id="history-modal-table-body"></tbody>
+            </table>
         </div>
     </div>
 
@@ -176,6 +191,7 @@
         const headers = { "apikey": SUPABASE_ANON_KEY, "Authorization": `Bearer ${SUPABASE_ANON_KEY}`, "Content-Type": "application/json" };
 
         let adminName = localStorage.getItem('admin_approved_name') || '';
+        let globalUsersCache = [], globalRequestsCache = [];
 
         if(adminName) startAdminDashboard();
 
@@ -222,6 +238,9 @@
                     fetch(`${SUPABASE_URL}/rest/v1/technicians?order=id.asc`, { headers }).then(r=>r.json())
                 ]);
 
+                globalUsersCache = usrs;
+                globalRequestsCache = reqs;
+
                 let techHtml = '';
                 techs.forEach(t => { techHtml += `<tr><td>${t.name}</td><td>${t.phone}</td><td><code>${t.password}</code></td></tr>`; });
                 document.getElementById('admin-techs-list').innerHTML = techHtml;
@@ -234,14 +253,12 @@
                         selectOptions += `<option value="${t.name}" ${selected}>${t.name}</option>`;
                     });
 
-                    // البحث عن حساب العميل لاستدعاء صورة منزله المسجلة بالاشتراك مسبقاً
                     let customer = usrs.find(u => u.phone && r.phone && u.phone.toString().trim() === r.phone.toString().trim());
                     let baseHouseImg = customer && customer.house_image ? customer.house_image : "";
                     let arrivalHouseImg = r.arrival_house_image ? r.arrival_house_image : "";
                     let finalReportImg = r.report_image ? r.report_image : "";
                     let cleanDesc = r.report_desc ? encodeURIComponent(r.report_desc) : "";
 
-                    // الزر يصبح متاحاً أولاً بأول بمجرد بدء التدفق الميداني
                     let hasAnyData = baseHouseImg || arrivalHouseImg || finalReportImg;
                     let reportButton = hasAnyData ? 
                         `<button class="btn btn-success" style="padding:4px 10px; font-size:12px; background:#3b82f6;" onclick="viewFinalReport('${cleanDesc}', '${baseHouseImg}', '${arrivalHouseImg}', '${finalReportImg}')">👁️ تتبع الصور والتقرير</button>` : 
@@ -263,18 +280,87 @@
                 });
                 document.getElementById('admin-active-list').innerHTML = activeHtml;
 
-                let userHtml = '', feedHtml = '';
-                usrs.forEach(u => {
-                    userHtml += `<tr><td>${new Date(u.date).toLocaleDateString('ar-SA')}</td><td>${u.name}</td><td>${u.phone}</td><td>${u.national_address || 'غير محدد'}</td><td><input type="text" value="${u.package_name || 'باقة السباكة والكهرباء'}" onchange="updateUserPackage(${u.id}, this.value)" style="padding:6px; margin:0; font-size:13px;"></td></tr>`;
-                });
+                // حقن السجل الأولي للمشتركين
+                renderUsersTable(usrs);
+
+                let feedHtml = '';
                 feds.forEach(f => {
                     feedHtml += `<tr><td>${f.date ? new Date(f.date).toLocaleDateString('ar-SA') : '-'}</td><td>${f.name}</td><td>${f.phone}</td><td>${f.type}</td><td>${f.desc}</td></tr>`;
                 });
-
-                document.getElementById('admin-users-list').innerHTML = userHtml;
                 document.getElementById('admin-feedbacks-list').innerHTML = feedHtml;
             } catch(e) { console.error(e); }
         }
+
+        // دالة بناء وبناء جدول المشتركين وحساب تواريخ الانتهاء وعدد البلاغات السابقة مسبقاً
+        function renderUsersTable(usersList) {
+            let userHtml = '';
+            usersList.forEach(u => {
+                let regDate = new Date(u.date || u.created_at || new Date());
+                let endDate = new Date(regDate);
+                endDate.setFullYear(endDate.getFullYear() + 1); // الباقة تنتهي تلقائياً بعد سنة كاملة
+
+                // تصفية وحساب عدد طلبات هذا العميل بعينه
+                let prevRequests = globalRequestsCache.filter(r => r.phone && u.phone && r.phone.toString().trim() === u.phone.toString().trim());
+                let totalReqsCount = prevRequests.length;
+
+                userHtml += `<tr>
+                    <td>${regDate.toLocaleDateString('ar-SA')}</td>
+                    <td><strong>${u.name}</strong></td>
+                    <td><code>${u.phone}</code></td>
+                    <td><small>${u.national_address || 'غير محدد'}</small></td>
+                    <td><input type="text" value="${u.package_name || 'باقة السباكة والكهرباء'}" onchange="updateUserPackage(${u.id}, this.value)" style="padding:6px; margin:0; font-size:13px; font-weight:bold; color:var(--primary);"></td>
+                    <td><mark style="padding:4px 8px; background:#fff7ed; color:#c2410c; border-radius:6px; font-weight:bold;">${endDate.toLocaleDateString('ar-SA')}</mark></td>
+                    <td>
+                        <button class="btn btn-info" style="padding:5px 12px; font-size:12px;" onclick="openUserHistoryModal('${u.name}', '${u.phone}')">
+                            📊 السجل (${totalReqsCount} طلبات)
+                        </button>
+                    </td>
+                </tr>`;
+            });
+            document.getElementById('admin-users-list').innerHTML = userHtml;
+        }
+
+        // ميزة الفلترة والبحث اللحظي بالاسم ورقم الجوال للمشتركين
+        function filterUsersTable() {
+            let keyword = document.getElementById('user-search-input').value.toLowerCase().trim();
+            if(!keyword) {
+                renderUsersTable(globalUsersCache);
+                return;
+            }
+
+            let filtered = globalUsersCache.filter(u => {
+                let nameMatch = u.name && u.name.toLowerCase().includes(keyword);
+                let phoneMatch = u.phone && u.phone.toString().includes(keyword);
+                return nameMatch || phoneMatch;
+            });
+
+            renderUsersTable(filtered);
+        }
+
+        // فتح سجل الطلبات السابقة الكامل للمشترك الحالي في نافذة منبثقة مخصصة
+        function openUserHistoryModal(name, phone) {
+            document.getElementById('history-modal-title').innerText = `السجل التاريخي الشامل لطلبات الصيانة للمشترك: ${name} 🗒️`;
+            let prevRequests = globalRequestsCache.filter(r => r.phone && phone && r.phone.toString().trim() === phone.toString().trim());
+            
+            let html = '';
+            if(prevRequests.length > 0) {
+                prevRequests.forEach(r => {
+                    html += `<tr>
+                        <td>${r.date || '-'}</td>
+                        <td><mark style="padding:2px 6px; background:#eff6ff; color:#1e40af; border-radius:4px;">${r.service}</mark></td>
+                        <td>${r.desc || '-'}</td>
+                        <td><strong>${r.tech || 'تحت البحث'}</strong></td>
+                        <td><span style="font-weight:bold; color:var(--primary);">${r.status || 'قيد الانتظار'}</span></td>
+                    </tr>`;
+                });
+            } else {
+                html = `<tr><td colspan="5" style="text-align:center; padding:20px; color:#94a3b8;">لا توجد طلبات صيانة سابقة مسجلة لهذا المشترك حتى الآن.</td></tr>`;
+            }
+            
+            document.getElementById('history-modal-table-body').innerHTML = html;
+            document.getElementById('user-history-modal').style.display = 'flex';
+        }
+        function closeUserHistoryModal() { document.getElementById('user-history-modal').style.display = 'none'; }
 
         async function updateUserPackage(id, newPackage) {
             await fetch(`${SUPABASE_URL}/rest/v1/users?id=eq.${id}`, { method: "PATCH", headers, body: JSON.stringify({ package_name: newPackage }) });
@@ -315,19 +401,11 @@
             alert("⚙️ تم إسناد الطلب للفني."); syncAdminData();
         }
 
-        // 🖼️ دالة المعاينة والربط الثلاثي المطور للصور أولاً بأول
         function viewFinalReport(desc, baseHouse, arrivalHouse, finalReport) {
             document.getElementById('modal-report-desc').innerText = desc ? decodeURIComponent(desc) : "لم يتم رفع تقرير نصي بعد، البلاغ قيد المباشرة الميدانية.";
-            
-            // الصورة 1: صورة البيت وقت الاشتراك
             document.getElementById('report-modal-user-house').src = baseHouse || "https://placehold.co/150x120?text=No+Image";
-            
-            // الصورة 2: صورة إثبات الوصول (تظهر فور ضغط الفني وصول)
             document.getElementById('report-modal-arrival-house').src = arrivalHouse || "https://placehold.co/150x120?text=Waiting+Arrival";
-            
-            // الصورة 3: صورة إغلاق المهمة والتقرير (تظهر فور إنهاء العمل)
             document.getElementById('report-modal-final').src = finalReport || "https://placehold.co/150x120?text=In+Progress";
-            
             document.getElementById('image-modal').style.display = 'flex';
         }
         function closeImageModal() { document.getElementById('image-modal').style.display = 'none'; }
