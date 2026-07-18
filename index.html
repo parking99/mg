@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>لوحة الإدارة الشاملة | صيانة+</title>
-    <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700;800&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght=400;500;700;800&display=swap" rel="stylesheet">
     <style>
         :root { --primary: #1e3a8a; --secondary: #10b981; --bg: #f3f4f6; --white: #ffffff; --text-main: #1f2937; --border: #e5e7eb; }
         * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Tajawal', sans-serif; }
@@ -51,7 +51,7 @@
             <label style="font-weight:bold;">الرقم السري للإدارة</label>
             <input type="password" id="admin-login-pass" placeholder="******">
         </div>
-        <button class="btn btn-primary" style="width: 100%;" onclick="adminLoginVerification()">دخول لوحة التحكم المركزية</button>
+        <button class="btn btn-primary" style="width: 100%;" onclick="adminLoginVerification()">دخول لوحة التحكم التحكم المركزية</button>
     </div>
 
     <!-- لوحة التحكم الإدارية المركزية -->
@@ -78,7 +78,7 @@
             </table>
         </div>
 
-        <!-- سجل العملاء والمشتركين المطور (البحث وتفاصيل الباقات والطلبات السابقة) -->
+        <!-- سجل العملاء والمشتركين المطور -->
         <div class="card">
             <div class="card-header">سجل العملاء والمشتركين النشطين والتحكم في باقاتهم 👥</div>
             <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px;">
@@ -111,21 +111,34 @@
             <button class="btn btn-success" id="btn-add-tech" onclick="addTechnician()">إنشاء حساب الفني وتفعيله</button>
         </div>
 
-        <!-- قسم الخدمات والمنتجات -->
+        <!-- قسم الخدمات والمنتجات المحدث لدعم المشمول والإضافي -->
         <div class="card">
             <div class="card-header">إضافة وتحديث الخدمات والباقات في الرئيسية ➕</div>
             <div style="display: flex; gap: 15px; flex-wrap: wrap;">
-                <div class="form-group"><label>اسم الخدمة / الباقة</label><input type="text" id="a-prod-name" placeholder="مثال: صيانة التكييف"></div>
-                <div class="form-group"><label>السعر المعروض</label><input type="text" id="a-prod-price" placeholder="مثال: 500 ر.س / سنوياً"></div>
+                <div class="form-group">
+                    <label>اسم الخدمة / الباقة</label>
+                    <input type="text" id="a-prod-name" placeholder="مثال: صيانة التكييف أو تنظيف خزانات">
+                </div>
+                <div class="form-group">
+                    <label>السعر (رقم فقط للخدمات الإضافية، أو نص للباقات)</label>
+                    <input type="text" id="a-prod-price" placeholder="مثال: 150 للخدمات، أو 500 ر.س / سنوياً للباقات">
+                </div>
                 <div class="form-group">
                     <label>نوع المنتج</label>
-                    <select id="a-prod-type" onchange="togglePackageField(this.value)">
+                    <select id="a-prod-type" onchange="onProductTypeChange(this.value)">
                         <option value="package">باقة اشتراك رئيسية معروضة للزوار</option>
                         <option value="service">خدمة صيانة فرعية داخلية للمشتركين</option>
                     </select>
                 </div>
+                <div class="form-group" id="service-coverage-group" style="display:none;">
+                    <label>حالة تغطية الخدمة في الاشتراك</label>
+                    <select id="a-service-coverage" onchange="onCoverageTypeChange(this.value)">
+                        <option value="mshmool">مشمولة ومجانية بالكامل ضمن باقة</option>
+                        <option value="additional">خدمة إضافية مدفوعة الثمن (خارج الباقة)</option>
+                    </select>
+                </div>
                 <div class="form-group" id="package-link-group" style="display:none;">
-                    <label>تابعة لأي باقة؟</label>
+                    <label>تابعة لأي باقة؟ (تظهر فقط إذا كانت الخدمة مشمولة)</label>
                     <input type="text" id="a-prod-package-name" value="باقة السباكة والكهرباء">
                 </div>
             </div>
@@ -155,7 +168,7 @@
         </div>
     </div>
 
-    <!-- نافذة مكبرة لعرض التقرير المصور والتتبع الجغرافي الميداني -->
+    <!-- نافذة تفاصيل التقرير المصور -->
     <div id="image-modal" style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.6); display: none; justify-content: center; align-items: center; z-index: 1000;" onclick="closeImageModal()">
         <div style="background: var(--white); padding: 25px; border-radius: 16px; width: 90%; max-width: 650px; text-align: right; position: relative;" onclick="event.stopPropagation()">
             <span style="position: absolute; top: 10px; right: 15px; font-size: 24px; cursor: pointer; color: var(--primary);" onclick="closeImageModal()">&times;</span>
@@ -171,7 +184,7 @@
         </div>
     </div>
 
-    <!-- نافذة منبثقة مخصصة لعرض السجل التاريخي الكامل لطلبات العميل مسبقاً -->
+    <!-- نافذة سجل طلبات المشترك -->
     <div id="user-history-modal" style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.6); display: none; justify-content: center; align-items: center; z-index: 1000;" onclick="closeUserHistoryModal()">
         <div style="background: var(--white); padding: 25px; border-radius: 16px; width: 90%; max-width: 800px; text-align: right; position: relative; max-height:85vh; overflow-y:auto;" onclick="event.stopPropagation()">
             <span style="position: absolute; top: 10px; right: 15px; font-size: 24px; cursor: pointer; color: var(--primary);" onclick="closeUserHistoryModal()">&times;</span>
@@ -195,8 +208,28 @@
 
         if(adminName) startAdminDashboard();
 
-        function togglePackageField(val) {
-            document.getElementById('package-link-group').style.display = (val === 'service') ? 'block' : 'none';
+        // معالجة تغيير نوع المنتج المضاف في لوحة الإدارة
+        function onProductTypeChange(val) {
+            let coverageGroup = document.getElementById('service-coverage-group');
+            let packageGroup = document.getElementById('package-link-group');
+            
+            if (val === 'service') {
+                coverageGroup.style.display = 'block';
+                onCoverageTypeChange(document.getElementById('a-service-coverage').value);
+            } else {
+                coverageGroup.style.display = 'none';
+                packageGroup.style.display = 'none';
+            }
+        }
+
+        // معالجة تغيير نطاق التغطية للخدمة (مشمولة أم إضافية مستقلة)
+        function onCoverageTypeChange(val) {
+            let packageGroup = document.getElementById('package-link-group');
+            if (val === 'mshmool') {
+                packageGroup.style.display = 'block';
+            } else {
+                packageGroup.style.display = 'none'; // الخدمة الإضافية لا ترتبط بأي باقة
+            }
         }
 
         function formatMidianTime(isoString) {
@@ -280,7 +313,6 @@
                 });
                 document.getElementById('admin-active-list').innerHTML = activeHtml;
 
-                // حقن السجل الأولي للمشتركين
                 renderUsersTable(usrs);
 
                 let feedHtml = '';
@@ -291,15 +323,13 @@
             } catch(e) { console.error(e); }
         }
 
-        // دالة بناء وبناء جدول المشتركين وحساب تواريخ الانتهاء وعدد البلاغات السابقة مسبقاً
         function renderUsersTable(usersList) {
             let userHtml = '';
             usersList.forEach(u => {
                 let regDate = new Date(u.date || u.created_at || new Date());
                 let endDate = new Date(regDate);
-                endDate.setFullYear(endDate.getFullYear() + 1); // الباقة تنتهي تلقائياً بعد سنة كاملة
+                endDate.setFullYear(endDate.getFullYear() + 1);
 
-                // تصفية وحساب عدد طلبات هذا العميل بعينه
                 let prevRequests = globalRequestsCache.filter(r => r.phone && u.phone && r.phone.toString().trim() === u.phone.toString().trim());
                 let totalReqsCount = prevRequests.length;
 
@@ -320,24 +350,17 @@
             document.getElementById('admin-users-list').innerHTML = userHtml;
         }
 
-        // ميزة الفلترة والبحث اللحظي بالاسم ورقم الجوال للمشتركين
         function filterUsersTable() {
             let keyword = document.getElementById('user-search-input').value.toLowerCase().trim();
-            if(!keyword) {
-                renderUsersTable(globalUsersCache);
-                return;
-            }
-
+            if(!keyword) { renderUsersTable(globalUsersCache); return; }
             let filtered = globalUsersCache.filter(u => {
                 let nameMatch = u.name && u.name.toLowerCase().includes(keyword);
                 let phoneMatch = u.phone && u.phone.toString().includes(keyword);
                 return nameMatch || phoneMatch;
             });
-
             renderUsersTable(filtered);
         }
 
-        // فتح سجل الطلبات السابقة الكامل للمشترك الحالي في نافذة منبثقة مخصصة
         function openUserHistoryModal(name, phone) {
             document.getElementById('history-modal-title').innerText = `السجل التاريخي الشامل لطلبات الصيانة للمشترك: ${name} 🗒️`;
             let prevRequests = globalRequestsCache.filter(r => r.phone && phone && r.phone.toString().trim() === phone.toString().trim());
@@ -356,7 +379,6 @@
             } else {
                 html = `<tr><td colspan="5" style="text-align:center; padding:20px; color:#94a3b8;">لا توجد طلبات صيانة سابقة مسجلة لهذا المشترك حتى الآن.</td></tr>`;
             }
-            
             document.getElementById('history-modal-table-body').innerHTML = html;
             document.getElementById('user-history-modal').style.display = 'flex';
         }
@@ -376,15 +398,35 @@
             if(res.ok) { alert("✅ تم إضافة الفني!"); syncAdminData(); }
         }
 
+        // معالجة حفظ ونشر الخدمة المحدثة لدعم خيار (مشمول / إضافي بسعر محدد)
         async function addProduct() {
             let name = document.getElementById('a-prod-name').value.trim();
             let price = document.getElementById('a-prod-price').value.trim();
             let type = document.getElementById('a-prod-type').value;
-            let belongs_to = document.getElementById('a-prod-package-name').value.trim();
-            if(!name || !price) return alert("الرجاء إدخال البيانات كاملة");
+            let coverage = document.getElementById('a-service-coverage').value;
+            
+            let belongs_to = "";
+            
+            if(type === 'service') {
+                // إذا كانت الخدمة مشمولة، نربطها باسم الباقة المكتوب، وإذا كانت إضافية نترك حقل الباقة فارغاً
+                belongs_to = (coverage === 'mshmool') ? document.getElementById('a-prod-package-name').value.trim() : "";
+            } else {
+                belongs_to = "";
+            }
 
-            await fetch(`${SUPABASE_URL}/rest/v1/products`, { method: "POST", headers, body: JSON.stringify({ name, price, type, belongs_to_package: belongs_to }) });
-            alert("✅ تم الحفظ والنشر!"); syncAdminData();
+            if(!name || !price) return alert("الرجاء إدخال اسم الخدمة وسعرها");
+
+            let payload = { name: name, price: price, type: type, belongs_to_package: belongs_to };
+
+            let res = await fetch(`${SUPABASE_URL}/rest/v1/products`, { method: "POST", headers, body: JSON.stringify(payload) });
+            if(res.ok) {
+                alert("✅ تم الحفظ ونشر التعديل السعري في النظام!");
+                document.getElementById('a-prod-name').value = '';
+                document.getElementById('a-prod-price').value = '';
+                syncAdminData();
+            } else {
+                alert("❌ خطأ أثناء الحفظ في قاعدة البيانات.");
+            }
         }
 
         async function assignTechToRequest(id, techName) {
